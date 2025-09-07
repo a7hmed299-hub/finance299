@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cosmic Login Experience</title>
+  <style>
+    * {margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif;}
+    body {
+      min-height:100vh;
+      background:linear-gradient(-45deg,#ee7752,#e73c7e,#23a6d5,#23d5ab);
+      background-size:400% 400%;
+      animation:gradient 15s ease infinite;
+      display:flex; justify-content:center; align-items:center;
+      overflow:hidden;
+    }
+    @keyframes gradient {
+      0%{background-position:0% 50%}
+      50%{background-position:100% 50%}
+      100%{background-position:0% 50%}
+    }
+    .container {
+      position:relative;
+      width:800px; height:500px;
+      border-radius:20px;
+      backdrop-filter:blur(10px);
+      background:rgba(255,255,255,0.1);
+      box-shadow:0 25px 45px rgba(0,0,0,0.1);
+      border:1px solid rgba(255,255,255,0.2);
+      overflow:hidden;
+    }
+    .form-container {position:absolute; top:0; width:100%; height:100%;
+      display:flex; justify-content:center; align-items:center;
+      transition:all 0.6s ease-in-out;}
+    .login-container {left:0; width:50%; z-index:2;}
+    .container.active .login-container {transform:translateX(100%); opacity:0;}
+    .register-container {right:-50%; width:50%; opacity:0; z-index:1;}
+    .container.active .register-container {transform:translateX(-100%); opacity:1; z-index:5;}
+    form {
+      background:rgba(255,255,255,0.9);
+      padding:40px; border-radius:15px;
+      width:100%; max-width:320px;
+      box-shadow:0 8px 32px rgba(31,38,135,0.37);
+    }
+    h1 {color:#333; margin-bottom:30px; text-align:center; font-size:28px;}
+    .input-group {position:relative; margin-bottom:25px;}
+    input {
+      width:100%; padding:12px 15px; border:none;
+      background:#f0f0f0; border-radius:8px; outline:none;
+      color:#333; font-size:16px; transition:all 0.3s;
+    }
+    input:focus {background:#e0e0e0; box-shadow:0 0 10px rgba(0,0,0,0.1);}
+    label {
+      position:absolute; top:12px; left:15px; color:#666;
+      font-size:16px; pointer-events:none; transition:all 0.3s;
+    }
+    input:focus ~ label, input:valid ~ label {
+      top:-20px; left:0; font-size:14px; color:#e73c7e;
+    }
+    button {
+      width:100%; padding:12px; border:none; border-radius:8px;
+      background:linear-gradient(45deg,#e73c7e,#23a6d5);
+      color:white; font-size:16px; font-weight:bold; cursor:pointer;
+      transition:all 0.3s; box-shadow:0 5px 15px rgba(0,0,0,0.2);
+    }
+    button:hover {transform:translateY(-3px); box-shadow:0 8px 20px rgba(0,0,0,0.3);}
+    .toggle-container {position:absolute; top:0; left:50%; width:50%; height:100%;
+      overflow:hidden; transition:all 0.6s ease-in-out; z-index:1000;}
+    .container.active .toggle-container {transform:translateX(-100%);}
+    .toggle {
+      background:linear-gradient(to right,#e73c7e,#23a6d5);
+      height:100%; color:white; position:relative; left:-100%; width:200%;
+      transform:translateX(0); transition:all 0.6s ease-in-out;
+    }
+    .container.active .toggle {transform:translateX(50%);}
+    .toggle-panel {
+      position:absolute; width:50%; height:100%;
+      display:flex; flex-direction:column; justify-content:center; align-items:center;
+      padding:0 30px; text-align:center; top:0; transition:all 0.6s;
+    }
+    .toggle-left {transform:translateX(-200%);}
+    .container.active .toggle-left {transform:translateX(0);}
+    .toggle-right {right:0;}
+    .container.active .toggle-right {transform:translateX(200%);}
+    .toggle-btn {background:transparent; border:2px solid white; padding:10px 30px;}
+    .animation-container {position:absolute; width:100%; height:100%; top:0; left:0; z-index:0;}
+    .shape {position:absolute; border-radius:50%; background:rgba(255,255,255,0.1);
+      animation:float 15s infinite ease-in-out;}
+    @keyframes float {
+      0%,100%{transform:translate(0,0) rotate(0deg);}
+      25%{transform:translate(20px,40px) rotate(90deg);}
+      50%{transform:translate(0,80px) rotate(180deg);}
+      75%{transform:translate(-20px,40px) rotate(270deg);}
+    }
+    .bicycle {position:absolute; bottom:-100px; left:-200px; font-size:60px;
+      animation:ride 20s infinite linear; transform:scaleX(-1);}
+    @keyframes ride {
+      0%{transform:translateX(-200px) scaleX(-1);}
+      49%{transform:translateX(1000px) scaleX(-1);}
+      50%{transform:translateX(1000px) scaleX(1);}
+      99%{transform:translateX(-200px) scaleX(1);}
+      100%{transform:translateX(-200px) scaleX(-1);}
+    }
+    .confetti {position:absolute; width:10px; height:10px; opacity:0;}
+    @keyframes confettiFall {
+      0%{transform:translateY(0) rotate(0deg);opacity:1;}
+      100%{transform:translateY(500px) rotate(360deg);opacity:0;}
+    }
+    .star {position:absolute; width:2px; height:100px;
+      background:linear-gradient(transparent,white);
+      animation:shoot 5s linear infinite;}
+    @keyframes shoot {
+      0%{transform:translateX(-200px) translateY(-200px) rotate(45deg); opacity:0;}
+      10%{opacity:1;}
+      100%{transform:translateX(800px) translateY(600px) rotate(45deg); opacity:0;}
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="container">
+    <div class="form-container login-container">
+      <form onsubmit="return false;">
+        <h1>Login</h1>
+        <div class="input-group"><input id="loginEmail" type="email" required><label>Email</label></div>
+        <div class="input-group"><input id="loginPass" type="password" required><label>Password</label></div>
+        <button type="button" id="loginBtn">Sign In</button>
+      </form>
+    </div>
+    <div class="form-container register-container">
+      <form onsubmit="return false;">
+        <h1>Create Account</h1>
+        <div class="input-group"><input id="regUser" type="text" required><label>Username</label></div>
+        <div class="input-group"><input id="regEmail" type="email" required><label>Email</label></div>
+        <div class="input-group"><input id="regPass" type="password" required><label>Password</label></div>
+        <button type="button" id="registerBtn">Sign Up</button>
+      </form>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle">
+        <div class="toggle-panel toggle-left">
+          <h1>Welcome Back!</h1>
+          <p>Enter your personal details to use all site features</p>
+          <button class="toggle-btn" id="login">Sign In</button>
+        </div>
+        <div class="toggle-panel toggle-right">
+          <h1>Hello, Friend!</h1>
+          <p>Register with your personal details to use all site features</p>
+          <button class="toggle-btn" id="register">Sign Up</button>
+        </div>
+      </div>
+    </div>
+    <div class="animation-container" id="animationContainer">
+      <div class="bicycle">🚴</div>
+    </div>
+  </div>
+  <script>
+    const container=document.getElementById('container');
+    const registerBtn=document.getElementById('register');
+    const loginBtn=document.getElementById('login');
+    const loginFormBtn=document.getElementById('loginBtn');
+    const registerFormBtn=document.getElementById('registerBtn');
+    const animationContainer=document.getElementById('animationContainer');
+    registerBtn.addEventListener('click',()=>container.classList.add('active'));
+    loginBtn.addEventListener('click',()=>container.classList.remove('active'));
+    for(let i=0;i<15;i++){const s=document.createElement('div');s.classList.add('shape');
+      const size=Math.random()*80+20;s.style.width=`${size}px`;s.style.height=`${size}px`;
+      const colors=['rgba(255,100,100,0.3)','rgba(100,255,100,0.3)','rgba(100,100,255,0.3)','rgba(255,255,100,0.3)','rgba(255,100,255,0.3)','rgba(100,255,255,0.3)'];
+      s.style.background=colors[Math.floor(Math.random()*colors.length)];
+      s.style.left=`${Math.random()*100}%`;s.style.top=`${Math.random()*100}%`;
+      s.style.animationDelay=`${Math.random()*5}s`;s.style.animationDuration=`${15+Math.random()*10}s`;
+      animationContainer.appendChild(s);
+    }
+    setInterval(()=>{
+      const star=document.createElement('div');star.classList.add('star');
+      star.style.left=Math.random()*window.innerWidth+'px';
+      star.style.top=Math.random()*200+'px';
+      animationContainer.appendChild(star);
+      setTimeout(()=>star.remove(),5000);
+    },3000);
+    let users;
+    try {
+      users = JSON.parse(localStorage.getItem('users')) || [];
+      if (!Array.isArray(users)) users = [];  // force reset if corrupted
+    } catch (e) {
+      users = [];  // fallback if JSON.parse fails
+    }
+    loginFormBtn.addEventListener('click',(event)=>{
+      event.preventDefault();
+      const email=document.getElementById('loginEmail').value.trim();
+      const pass=document.getElementById('loginPass').value.trim();
+      const account=users.find(u=>u.email===email&&u.pass===pass);
+      if(account){
+        sessionStorage.setItem('loggedIn','true');
+        sessionStorage.setItem('currentUser',account.user);
+        createConfetti();document.querySelector('.bicycle').style.animation='ride 8s linear forwards';
+        setTimeout(()=>{window.location.href='fin23.html';},2000);
+      }else{alert('Invalid credentials');}
+    });
+
+    document.getElementById('registerBtn').addEventListener('click',(event)=>{
+      event.preventDefault();
+
+      const user = document.getElementById('regUser').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const pass = document.getElementById('regPass').value.trim();
+
+      if(user && email && pass){
+        let users;
+        try {
+          users = JSON.parse(localStorage.getItem('users')) || [];
+          if (!Array.isArray(users)) users = [];
+        } catch (e) {
+          users = [];
+        }
+
+        if(users.find(u => u.email === email)){
+          alert('Email already registered');
+          return;
+        }
+
+        // Save account
+        users.push({user,email,pass});
+        localStorage.setItem('users', JSON.stringify(users));
+
+        // Auto-login
+        sessionStorage.setItem('loggedIn','true');
+        sessionStorage.setItem('currentUser', user);
+
+        alert('Account created! Redirecting...');
+        setTimeout(()=>{window.location.href='fin23.html';},1500);
+      } else {
+        alert('Fill all fields');
+      }
+    });
+
+    function createConfetti(){
+      for(let i=0;i<100;i++){
+        const c=document.createElement('div');c.classList.add('confetti');
+        const colors=['#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff','#00ffff'];
+        c.style.background=colors[Math.floor(Math.random()*colors.length)];
+        c.style.left=Math.random()*100+'%';c.style.top=Math.random()*100+'%';
+        c.style.width=Math.random()*10+5+'px';c.style.height=Math.random()*10+5+'px';
+        c.style.animation=`confettiFall ${Math.random()*3+2}s linear forwards`;
+        animationContainer.appendChild(c);setTimeout(()=>c.remove(),5000);
+      }
+    }
+  </script>
+</body>
+</html>
