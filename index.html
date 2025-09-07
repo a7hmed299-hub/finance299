@@ -114,6 +114,47 @@
       10%{opacity:1;}
       100%{transform:translateX(800px) translateY(600px) rotate(45deg); opacity:0;}
     }
+    /* For tablets */
+@media (max-width: 768px) {
+  .grid-2, .grid-3 {
+    grid-template-columns: 1fr; /* stack columns */
+  }
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .controls {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+}
+
+/* For phones */
+@media (max-width: 480px) {
+  body {
+    font-size: 14px;
+    padding: 5px;
+  }
+  header {
+    font-size: 16px;
+  }
+  .btn {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+  .card {
+    padding: 10px;
+  }
+  .transaction-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .stat-card .stat-value {
+    font-size: 18px;
+  }
+}
   </style>
 </head>
 <body>
