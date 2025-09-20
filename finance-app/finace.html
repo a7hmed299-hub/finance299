@@ -1,0 +1,1564 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>My Finance — Pro</title>
+
+<style>
+  :root{
+    --bg:#f5f7fb; --card:#ffffff; --muted:#6b7280;
+    --primary:#1f6feb; --accent:#06b6d4; --success:#10b981; --danger:#ef4444;
+    --header:#0b1220; --headerText:#e6f0ff;
+    --radius:12px; --maxW:1200px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+    background:var(--bg); color:#0f172a;
+  }
+  body.dark {
+    --bg:#0b1220;
+    --card:#111827;
+    --muted:#9ca3af;
+    --primary:#3b82f6;
+    --accent:#06b6d4;
+    --success:#10b981;
+    --danger:#ef4444;
+    --header:#111827;
+    --headerText:#e5e7eb;
+  }
+    body.dark .screen-card,
+    body.dark .card,
+    body.dark .stat {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: #f9fafb;
+    }
+
+    body.dark input,
+    body.dark select,
+    body.dark textarea {
+    background:#0f172a;
+    border:1px solid var(--border);background-color: #06b6d4;
+    color:#f9fafb;
+    }
+
+    body.dark .btn {
+    background: var(--primary);
+    color: #fff;
+    }
+
+    body.dark .btn.secondary {
+    background: transparent;
+    border:1px solid var(--border);
+    color: var(--muted);
+    }
+
+    body.dark .list-item {
+    background: #0f172a;
+    border:1px solid var(--border);
+    }
+
+    body.dark .modal {
+    background: var(--card);
+    color:#f9fafb;
+    }
+
+    body.dark .muted {
+    color: var(--muted);
+    }  
+
+  /* Header Nav */
+    header.app-header {
+    background: linear-gradient(90deg, var(--header, #1e293b), #0f1724);
+    color: var(--headerText, #f9fafb);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    }
+    /* General responsive grid */
+    @media (max-width: 768px) {
+    .grid.cols-2 {
+        grid-template-columns: 1fr; /* stack instead of 2 columns */
+    }
+
+    .btn {
+        width: 100%; /* buttons full width */
+    }
+
+    input, select, textarea {
+        width: 100%; /* inputs expand to full width */
+    }
+
+    .screen-card {
+        padding: 12px;
+    }
+    }
+
+
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .logo{ width:44px; height:44px; border-radius:10px; display:flex; justify-content:center; align-items:center; font-weight:800; background:#C551BF; color:white; }
+  nav.top-nav{ display:flex; gap:8px; align-items:center; }
+  nav.top-nav button{ background:transparent; border:none; color:var(--headerText); padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:700; opacity:0.9; }
+  nav.top-nav button.active{ background:#335477; box-shadow: inset 0 1px 0 rgba(255,255,255,0.02); }
+
+  .header-right{ display:flex; gap:12px; align-items:center; color:var(--headerText); }
+  .logoutBtn{ background:red; border:1px solid rgba(255,255,255,0.06); color:var(--headerText); padding:8px 10px; border-radius:8px; cursor:pointer; font-weight:700; }
+
+  /* Main container */
+  .container{ max-width:var(--maxW); margin:20px auto; padding:12px; display:flex; flex-direction:column; gap:12px; }
+
+  .screen-card { background:var(--card); border-radius:12px; padding:16px; box-shadow:0 8px 30px rgba(15,23,42,0.06); }
+
+  .grid{ display:grid; gap:12px; }
+  .cols-3{ grid-template-columns: repeat(3,1fr); }
+  .cols-2{ grid-template-columns: repeat(2,1fr); }
+  .cols-1{ grid-template-columns: 1fr; }
+
+  .stat { padding:12px; border-radius:10px; background:linear-gradient(180deg,#fff,#fbfdff); border:1px solid rgba(15,23,42,0.03); }
+  .stat .label{ font-weight:700; }
+  .stat .num{ font-size:1.25rem; margin-top:8px; font-weight:800; }
+
+  .card { background:linear-gradient(180deg,#fff,#fbfdff); padding:12px; border-radius:10px; border:1px solid rgba(15,23,42,0.03); }
+  .card .title { font-weight:700; margin-bottom:8px; }
+
+  .chart-wrap { min-height:220px; display:flex; align-items:center; justify-content:center; }
+
+  .list { max-height:360px; overflow:auto; display:flex; flex-direction:column; gap:8px; padding-right:6px; }
+  .list-item { display:flex; justify-content:space-between; gap:12px; padding:8px; border-radius:8px; align-items:center; border:1px solid rgba(15,23,42,0.03); background:#fff; }
+  .muted { color:var(--muted); font-size:0.92rem; }
+
+  .form-row { display:flex; gap:8px; align-items:end; flex-wrap:wrap; }
+  .col { flex:1; min-width:140px; display:flex; flex-direction:column; gap:6px; }
+  input, select, textarea { padding:8px; border-radius:8px; border:1px solid #e6eef8; background:linear-gradient(180deg,#fff,#fbfdff); font-size:0.95rem; }
+
+  button.btn{ padding:8px 10px; border-radius:8px; border:none; background:var(--primary); color:white; font-weight:700; cursor:pointer; }
+  button.btn.secondary{ background:transparent; border:1px solid #edf2f7; color:var(--muted); font-weight:700; }
+
+  .badge{ padding:6px 8px; border-radius:999px; background:#f1f5f9; font-weight:700; }
+    .form-row {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:8px;
+    gap:12px;
+    }
+
+    .form-row label {
+    flex:0 0 120px; /* fixed width for labels */
+    }
+
+    .form-row input,
+    .form-row select {
+    flex:1;
+    }
+    .history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    }
+
+    .history-table th,
+    .history-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border, #ddd);
+    text-align: left;
+    }
+
+    .history-table th {
+    background: var(--card, #f5f5f5);
+    font-weight: 600;
+    }
+
+    .history-table tr:hover {
+    background: rgba(0,0,0,0.03);
+    }
+    /* Toggle switch */
+    .switch {
+    position: relative;
+    display: inline-block;
+    width: 42px;
+    height: 22px;
+    margin-right: 12px;
+    }
+
+    .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    }
+
+    .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #ccc;
+    transition: .3s;
+    border-radius: 22px;
+    }
+
+    .slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+    }
+
+    input:checked + .slider {
+    background-color: var(--primary, #3b82f6);
+    }
+
+    input:checked + .slider:before {
+    transform: translateX(20px);
+    }
+    .auth-screen {
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    background: var(--bg, #f5f7fb);
+    }
+
+    .auth-card {
+    background: var(--card, #fff);
+    padding: 32px;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 400px;
+    }
+
+    .auth-title {
+    margin:0 0 6px 0;
+    font-size: 24px;
+    font-weight: 700;
+    text-align:center;
+    }
+
+    .auth-sub {
+    margin:0 0 20px 0;
+    font-size:14px;
+    color: var(--muted, #666);
+    text-align:center;
+    }
+
+    .auth-card .form-row {
+    display:flex;
+    flex-direction:column;
+    margin-bottom:14px;
+    }
+
+    .auth-card .form-row label {
+    margin-bottom:4px;
+    font-size:13px;
+    color: var(--muted, #666);
+    }
+
+    .auth-card input {
+    padding:10px;
+    border:1px solid var(--border, #ddd);
+    border-radius:8px;
+    font-size:14px;
+    width:100%;
+    }
+
+    .auth-actions {
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-top:8px;
+    }
+
+    .auth-actions .btn {
+    width:100%;
+    }
+
+    .auth-footer {
+    margin-top:12px;
+    font-size:13px;
+    text-align:center;
+    }
+
+    .auth-footer a {
+    color: var(--primary, #3b82f6);
+    text-decoration:none;
+    }
+
+    .auth-footer a:hover {
+    text-decoration:underline;
+    }
+
+    .mobile-nav {
+    display: none;
+    flex-direction: column;
+    background: var(--header, #1e293b);
+    padding: 10px 20px;
+    animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+    }
+
+  /* modal */
+  .modal-overlay{ position:fixed; inset:0; background:rgba(2,6,23,0.45); display:flex; align-items:center; justify-content:center; z-index:999; }
+  .modal{ background:white; width:520px; max-width:92%; border-radius:12px; padding:16px; box-shadow:0 20px 50px rgba(2,6,23,0.4); }
+  .modal .title{ font-weight:800; margin-bottom:8px; }
+  .modal .body{ max-height:320px; overflow:auto; margin-bottom:12px; color:#0b1220 }
+  .modal .controls{ display:flex; justify-content:flex-end; gap:8px; }
+
+  .budget-history .under{ color:var(--success); font-weight:800 }
+  .budget-history .over{ color:var(--danger); font-weight:800 }
+ 
+  .app-title { 
+      font-size:24px; 
+      font-weight:700; 
+      background:linear-gradient(90deg,#8b5cf6,#ec4899); 
+      -webkit-background-clip:text; 
+      -webkit-text-fill-color:transparent; 
+      margin-bottom: 5px;
+    }
+  @media (max-width:980px){
+    .cols-3{ grid-template-columns: repeat(2,1fr) }
+  }
+  @media (max-width:640px){
+    .cols-2{ grid-template-columns: 1fr }
+    .cols-3{ grid-template-columns: 1fr }
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <div class="logo">MF</div>
+    <div style="color:var(--headerText)">
+      <div class="app-title">Personal Finance </div>
+      <div style="font-size:0.86rem; opacity:0.9" id="headerEmail"></div>
+    </div>
+  </div>
+  <nav class="top-nav" role="navigation" aria-label="Main navigation">
+    <button data-screen="dashboard" class="active">Dashboard</button>
+    <button data-screen="transactions">Transactions</button>
+    <button data-screen="accounts">Accounts</button>
+    <button data-screen="categories">Categories</button>
+    <button data-screen="budgets">Budgets</button>
+    <button data-screen="bills">Bills</button>
+    <button data-screen="settings">Settings</button>
+  </nav>
+    <div class="header-right">
+    <label class="switch">
+        <input type="checkbox" id="darkToggle">
+        <span class="slider round"></span>
+    </label>
+    <button id="logout" class="logoutBtn">Logout</button>
+    </div>
+
+</header>
+
+<div class="container">
+  <!-- AUTH -->
+    <div id="authCard" class="screen-card" style="max-width:480px; margin:auto; display:none;">
+    <h2 style="margin:0 0 8px 0">Sign in</h2>
+    <div class="muted">Sign in with your email and password</div>
+    <div style="height:12px"></div>
+    
+    <div class="card">
+        <div class="form-row">
+        <label class="muted">Email</label>
+        <input id="loginEmail" type="email" />
+        </div>
+        
+        <div class="form-row">
+        <label class="muted">Password</label>
+        <input id="loginPassword" type="password" />
+        </div>
+        
+        <div style="margin-top:12px; display:flex; gap:8px">
+        <button id="signInBtn" class="btn">Sign in</button>
+        <button id="createBtn" class="btn secondary">Create account</button>
+        </div>
+        
+        <div class="muted" id="authMsg" style="margin-top:8px"></div>
+    </div>
+    </div>
+
+  <!-- App area -->
+  <div id="appArea" style="display:none; width:100%">
+
+    <!-- Dashboard -->
+    <section id="dashboard" class="screen-card" style="display:block;">
+      <div class="grid cols-3" style="margin-bottom:12px">
+        <div class="stat">
+          <div class="label">Total Balance</div>
+          <div class="num" id="balVal">$0.00</div>
+          <div class="muted">Net of income & expense</div>
+        </div>
+        <div class="stat">
+          <div class="label">Total Income</div>
+          <div class="num" id="incVal" style="color:var(--success)">$0.00</div>
+          <div class="muted">All income</div>
+        </div>
+        <div class="stat">
+          <div class="label">Total Expense</div>
+          <div class="num" id="expVal" style="color:var(--danger)">$0.00</div>
+          <div class="muted">All expenses</div>
+        </div>
+      </div>
+
+      <div class="grid cols-2" style="margin-bottom:12px">
+        <div class="card">
+          <div class="title">Cash Flow (6 months)</div>
+          <div class="chart-wrap"><canvas id="dashCashFlow" style="width:100%;"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="title">Spending by Category</div>
+          <div class="chart-wrap"><canvas id="dashSpendCat" style="width60%;"></canvas></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="title">Recent Transactions</div>
+        <div class="list" id="dashRecent"></div>
+      </div>
+    </section>
+
+    <!-- Transactions -->
+    <section id="transactions" class="screen-card" style="display:none">
+    <div class="grid cols-2" style="gap:12px">
+        
+        <!-- Transaction Form -->
+        <div class="card">
+        <div class="title">Add Transaction</div>
+        
+        <div class="form-row">
+            <label class="muted">Type</label>
+            <select id="txnType">
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
+            </select>
+        </div>
+
+        <div class="form-row">
+            <label class="muted">Category</label>
+            <select id="txnCategory"></select>
+        </div>
+
+        <div class="form-row">
+            <label class="muted">Account</label>
+            <select id="txnAccount"></select>
+        </div>
+
+        <div class="form-row">
+            <label class="muted">Amount</label>
+            <input id="txnAmount" type="number" step="0.01"/>
+        </div>
+
+        <div class="form-row">
+            <label class="muted">Date</label>
+            <input id="txnDate" type="date"/>
+        </div>
+
+        <div class="form-row">
+            <label class="muted">Description</label>
+            <input id="txnDesc" placeholder="Optional note"/>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-top:12px">
+            <button id="addTxn" class="btn">Add Transaction</button>
+            <button id="clearTxn" class="btn secondary">Clear</button>
+        </div>
+        </div>
+        
+        <!-- Transaction History -->
+        <div class="card">
+        <div class="title">All Transactions</div>
+        <div class="list" id="allTxList"></div>
+        </div>
+    </div>
+
+    <!-- Chart row -->
+    <div class="card" style="margin-top:12px">
+        <div class="title">Income vs Expense (Last 30 days)</div>
+        <div class="chart-wrap"><canvas id="txnIncExp"></canvas></div>
+    </div>
+    </section>
+
+
+    <!-- Accounts -->
+    <section id="accounts" class="screen-card" style="display:none">
+    <div class="grid cols-2" style="margin-bottom:12px">
+        
+        <!-- Add Account Form -->
+        <div class="card">
+        <div class="title">Add Account</div>
+        
+        <div class="form-row">
+            <label class="muted">Name</label>
+            <input id="accName" />
+        </div>
+
+        <div class="form-row">
+            <label class="muted">Starting Balance</label>
+            <input id="accStart" type="number" step="0.01" />
+        </div>
+
+        <div class="form-row">
+            <label class="muted">Type</label>
+            <select id="accType">
+            <option>Bank</option>
+            <option>Cash</option>
+            <option>Wallet</option>
+            </select>
+        </div>
+
+        <div style="margin-top:12px; display:flex; gap:8px">
+            <button id="addAccountBtn" class="btn">Add Account</button>
+        </div>
+        </div>
+
+        <!-- Accounts List -->
+        <div class="card">
+        <div class="title">Accounts</div>
+        <div class="list" id="accountsList"></div>
+        </div>
+    </div>
+
+    <!-- Accounts Chart -->
+    <div class="card">
+        <div class="title">Accounts Overview</div>
+        <div class="chart-wrap">
+        <canvas id="accountsChart"></canvas>
+        </div>
+    </div>
+    </section>
+
+
+    <!-- Categories -->
+    <section id="categories" class="screen-card" style="display:none">
+    <div class="grid cols-2">
+        
+        <!-- Create Category Form -->
+        <div class="card">
+        <div class="title">Create Category</div>
+        
+        <div class="form-row">
+            <label class="muted">Name</label>
+            <input id="catName" />
+        </div>
+        
+        <div class="form-row">
+            <label class="muted">Type</label>
+            <select id="catType">
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
+            </select>
+        </div>
+        
+        <div style="margin-top:12px; display:flex; gap:8px">
+            <button id="addCatBtn" class="btn">Add Category</button>
+        </div>
+        </div>
+
+        <!-- Categories List -->
+        <div class="card">
+        <div class="title">Categories</div>
+        
+        <div style="display:flex; gap:8px; margin-bottom:8px">
+            <button class="btn secondary" id="showAllCats">All</button>
+            <button class="btn secondary" id="showExp">Expense</button>
+            <button class="btn secondary" id="showInc">Income</button>
+        </div>
+        
+        <div class="list" id="catsList"></div>
+        </div>
+    </div>
+    </section>
+
+    <!-- Budgets -->
+    <section id="budgets" class="screen-card" style="display:none">
+    <div class="grid cols-2">
+        
+        <!-- Create Budget Form -->
+        <div class="card">
+        <div class="title">Create Budget (Expense)</div>
+        
+        <div class="form-row">
+            <label class="muted">Category</label>
+            <select id="budgetCategory"></select>
+        </div>
+        
+        <div class="form-row">
+            <label class="muted">Amount</label>
+            <input id="budgetAmount" type="number" step="0.01" />
+        </div>
+        
+        <div class="form-row">
+            <label class="muted">Period</label>
+            <select id="budgetPeriod">
+            <option value="monthly">Monthly</option>
+            <option value="yearly">Yearly</option>
+            </select>
+        </div>
+        
+        <div style="margin-top:12px; display:flex; gap:8px">
+            <button id="addBudget" class="btn">Create Budget</button>
+        </div>
+        </div>
+        
+        <!-- Active Budgets -->
+        <div class="card">
+        <div class="title">Budgets</div>
+        <div class="list" id="budgetsList"></div>
+        </div>
+    </div>
+    
+    <!-- Budget History -->
+    <div class="card" style="margin-top:12px">
+        <div class="title">Budget History</div>
+        <div class="list" id="budgetHistoryList"></div>
+    </div>
+    </section>
+
+
+    <!-- Bills -->
+    <section id="bills" class="screen-card" style="display:none">
+    <div class="grid cols-2">
+        
+        <!-- Add Bill Form -->
+        <div class="card">
+        <div class="title">Add Bill (no category)</div>
+
+        <div class="form-row">
+            <label class="muted">Name</label>
+            <input id="billName" />
+        </div>
+
+        <div class="form-row">
+            <label class="muted">Amount</label>
+            <input id="billAmount" type="number" step="0.01" />
+        </div>
+
+        <div class="form-row">
+            <label class="muted">Due Date</label>
+            <input id="billDue" type="date" />
+        </div>
+
+        <div style="margin-top:12px; display:flex; gap:8px">
+            <button id="addBill" class="btn">Add Bill</button>
+        </div>
+        </div>
+        
+        <!-- Upcoming Bills -->
+        <div class="card">
+        <div class="title">Upcoming Bills</div>
+        <div class="list" id="upcomingBills"></div>
+        </div>
+    </div>
+
+    <!-- Paid Bills History -->
+    <div class="card" style="margin-top:12px">
+        <div class="title">Paid Bills (History)</div>
+        <div class="list" id="paidBills"></div>
+    </div>
+    </section>
+
+
+    <!-- Settings -->
+    <section id="settings" class="screen-card" style="display:none">
+      <div class="grid cols-2">
+        <div class="card">
+          <div class="title">Explore the Data</div>
+          <div style="height:8px"></div>
+          <div style="display:flex; gap:8px; margin-bottom:8px">
+            <select id="exploreCollection">
+              <option value="transactions">Transactions</option>
+              <option value="accounts">Accounts</option>
+              <option value="categories">Categories</option>
+              <option value="budgets">Budgets</option>
+              <option value="bills">Bills</option>
+              <option value="budgetHistory">Budget History</option>
+            </select>
+            <button id="loadExplore" class="btn">Load</button>
+            <button id="clearExplore" class="btn secondary">Clear</button>
+          </div>
+          <pre id="exploreOutput" style="max-height:280px; overflow:auto; background:#fafafa; padding:12px; border-radius:8px;"></pre>
+        </div>
+
+        <div class="card">
+          <div class="title">Import & Export</div>
+          <div style="height:8px"></div>
+          <div style="display:flex; gap:8px; margin-bottom:8px">
+            <input id="importFile" type="file" accept="application/json" />
+            <button id="importBtn" class="btn">Import JSON</button>
+          </div>
+          <div style="display:flex; gap:8px">
+            <select id="exportCollection"><option value="all">All</option><option value="transactions">Transactions</option><option value="accounts">Accounts</option><option value="categories">Categories</option><option value="budgets">Budgets</option><option value="bills">Bills</option><option value="budgetHistory">Budget History</option></select>
+            <button id="exportBtn" class="btn">Export</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div> <!-- appArea -->
+</div> <!-- container -->
+
+<!-- Modal for transaction view -->
+<div id="viewModal" style="display:none" class="modal-overlay" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="title">Transaction Details</div>
+    <div class="body" id="viewModalBody">Loading...</div>
+    <div class="controls">
+      <button id="closeModal" class="btn secondary">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase + Chart.js -->
+<script type="module">
+/* ========== Firebase setup ========== */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+import {
+  getFirestore, collection, addDoc, query, where, onSnapshot, doc, updateDoc, deleteDoc, getDoc, setDoc, getDocs
+} from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBqnzoecJGJ2sjNvRjTrZ3RRiS-P8hGds4",
+  authDomain: "my-finance-f8e3b.firebaseapp.com",
+  projectId: "my-finance-f8e3b",
+  storageBucket: "my-finance-f8e3b.firebasestorage.app",
+  messagingSenderId: "161240673030",
+  appId: "1:161240673030:web:e784a97793a5efb0d28c87",
+  measurementId: "G-QJWKFYTX2N"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* ========== state ========== */
+let state = { transactions:[], accounts:[], categories:[], budgets:[], bills:[], budgetHistory:[] };
+let unsubscribeFns = [];
+
+/* ========== helpers ========== */
+const $ = id => document.getElementById(id);
+const setText = (id,txt) => { const el=$(id); if(el) el.textContent = txt; };
+function esc(s){ if(s===undefined||s===null) return ''; return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function formatCurrency(n){ const cur = $('prefCurrency') ? $('prefCurrency').value : '$'; return `${cur}${Number(n||0).toFixed(2)}`; }
+
+/* ========== navigation handling (header) ========== */
+document.querySelectorAll('nav.top-nav button').forEach(btn=>{
+  btn.addEventListener('click', ()=> {
+    document.querySelectorAll('nav.top-nav button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const screen = btn.getAttribute('data-screen');
+    showScreen(screen);
+  });
+});
+function showScreen(s){
+  ['dashboard','transactions','accounts','categories','budgets','bills','settings'].forEach(id => {
+    const el = $(id);
+    if(el) el.style.display = (id===s) ? 'block' : 'none';
+  });
+}
+
+/* ========== Auth UI ========== */
+$('logout').addEventListener('click', async ()=> { try { await signOut(auth); } catch(e){ console.warn(e); } });
+
+$('signInBtn').addEventListener('click', async ()=>{
+  $('authMsg').textContent='';
+  try{
+    const e = $('loginEmail').value.trim(); const p = $('loginPassword').value;
+    await signInWithEmailAndPassword(auth,e,p);
+  } catch(err){ $('authMsg').textContent = err.message || 'Sign in failed'; }
+});
+$('createBtn').addEventListener('click', async ()=>{
+  $('authMsg').textContent='';
+  try{
+    const e = $('loginEmail').value.trim(); const p = $('loginPassword').value;
+    if(!e||!p) { $('authMsg').textContent = 'Provide email & password'; return; }
+    const cr = await createUserWithEmailAndPassword(auth,e,p);
+    await setDoc(doc(db,'users',cr.user.uid), { email:e, currency:'$', dateFormat:'YYYY-MM-DD', createdAt:new Date() });
+  }catch(err){ $('authMsg').textContent = err.message || 'Create failed'; }
+});
+
+/* ========== Auth state & attach listeners ========== */
+onAuthStateChanged(auth, async user => {
+  // cleanup old listeners
+  unsubscribeFns.forEach(f=>f && f());
+  unsubscribeFns = [];
+
+  if(!user){
+    $('authCard').style.display='block';
+    $('appArea').style.display='none';
+    setText('headerEmail','');
+    setText('headerRightInfo','');
+    return;
+  }
+
+  // show app
+  $('authCard').style.display='none';
+  $('appArea').style.display='block';
+  setText('headerEmail', user.email || '');
+  setText('headerRightInfo', user.email || '');
+
+  // load user prefs if any
+  try{
+    const ud = await getDoc(doc(db,'users',user.uid));
+    if(ud.exists()){
+      const d = ud.data();
+      // optional prefs (not shown UI here but used in formatCurrency)
+      // user may not have pref fields so guard
+      if(d.currency) {
+        // put into a hidden pref control if needed in future
+      }
+    }
+  }catch(e){ console.warn('pref load', e); }
+
+  // attach real-time listeners for user's collections
+  attachRealtime(user.uid);
+});
+
+/* ========== Realtime listeners ========== */
+function attachRealtime(uid){
+  try{
+    // transactions
+    const txQ = query(collection(db,'transactions'), where('userId','==',uid));
+    const unsubTx = onSnapshot(txQ, snap => {
+      const arr=[]; snap.forEach(d=>arr.push({ id:d.id, ...d.data() }));
+      state.transactions = arr;
+      onTransactionsUpdated();
+    });
+    unsubscribeFns.push(unsubTx);
+
+    // accounts
+    const accQ = query(collection(db,'accounts'), where('userId','==',uid));
+    const unsubAcc = onSnapshot(accQ, snap=>{
+      const arr=[]; snap.forEach(d=>arr.push({ id:d.id, ...d.data() }));
+      state.accounts = arr;
+      onAccountsUpdated();
+    });
+    unsubscribeFns.push(unsubAcc);
+
+    // categories
+    const catQ = query(collection(db,'categories'), where('userId','==',uid));
+    const unsubCat = onSnapshot(catQ, snap=>{
+      const arr=[]; snap.forEach(d=>arr.push({ id:d.id, ...d.data() }));
+      state.categories = arr;
+      onCategoriesUpdated();
+    });
+    unsubscribeFns.push(unsubCat);
+
+    // budgets
+    const budQ = query(collection(db,'budgets'), where('userId','==',uid));
+    const unsubBud = onSnapshot(budQ, snap=>{
+      const arr=[]; snap.forEach(d=>arr.push({ id:d.id, ...d.data() }));
+      state.budgets = arr;
+      renderBudgets();
+    });
+    unsubscribeFns.push(unsubBud);
+
+    // bills
+    const billQ = query(collection(db,'bills'), where('userId','==',uid));
+    const unsubBill = onSnapshot(billQ, snap=>{
+      const arr=[]; snap.forEach(d=>arr.push({ id:d.id, ...d.data() }));
+      state.bills = arr;
+      renderBills();
+    });
+    unsubscribeFns.push(unsubBill);
+
+    // budget history
+    const bhQ = query(collection(db,'budgetHistory'), where('userId','==',uid));
+    const unsubBH = onSnapshot(bhQ, snap=>{
+      const arr=[]; snap.forEach(d=>arr.push({ id:d.id, ...d.data() }));
+      state.budgetHistory = arr;
+      renderBudgetHistory();
+    });
+    unsubscribeFns.push(unsubBH);
+
+  } catch(err){ console.error('attachRealtime', err); }
+}
+
+/* ========== On-data-updated handlers (populate selects once, preserve selection) ========== */
+function onCategoriesUpdated(){
+  // preserve
+  const preserve = {
+    txnCategory: $('txnCategory').value || '',
+    budgetCategory: $('budgetCategory').value || ''
+  };
+
+  const exp = state.categories.filter(c=>c.type==='expense');
+  const inc = state.categories.filter(c=>c.type==='income');
+
+  const selectedType = $('txnType').value || 'expense';
+  const txnCats = (selectedType==='expense') ? exp : inc;
+  setOptionsPreserve($('txnCategory'), txnCats.map(c => ({v:c.name, t:c.name})), preserve.txnCategory);
+
+  setOptionsPreserve($('budgetCategory'), exp.map(c=>({v:c.name,t:c.name})), preserve.budgetCategory);
+
+  renderCategoriesList();
+}
+
+function onAccountsUpdated(){
+  const preserve = $('txnAccount').value || '';
+  const items = state.accounts.map(a => ({ v:a.id, t: a.name }));
+  setOptionsPreserve($('txnAccount'), items, preserve);
+  renderAccountsList();
+  renderAccountsChart();
+}
+
+function onTransactionsUpdated(){
+  renderAllTransactions();
+  renderDashboard();
+  renderBudgetsSpent();
+  renderDashCharts();
+  renderTxnIncExpChart();
+}
+
+/* ========== utility: set select options but keep previous selection if available ========== */
+function setOptionsPreserve(selectEl, options, preserveValue){
+  if(!selectEl) return;
+  const cur = preserveValue !== undefined ? preserveValue : (selectEl.value || '');
+  const html = ['<option value="">Select</option>', ...options.map(o=>`<option value="${esc(o.v)}">${esc(o.t)}</option>` )].join('');
+  selectEl.innerHTML = html;
+  if(cur){
+    const exists = Array.from(selectEl.options).some(opt => opt.value === String(cur));
+    if(exists) selectEl.value = cur;
+  }
+}
+
+/* ========== Rendering lists & charts ========== */
+let dashCashChart = null, dashSpendChart = null, txnIncExpChart = null, accountsChart = null;
+
+function renderCategoriesList(){
+  const out = $('catsList');
+  if(!out) return;
+  if(!state.categories.length){ out.innerHTML = '<div class="muted">No categories</div>'; return; }
+  out.innerHTML = state.categories.map(c=>`
+    <div class="list-item">
+      <div>
+        <div style="font-weight:700">${esc(c.name)}</div>
+        <div class="muted">${esc(c.type)}</div>
+      </div>
+      <div style="display:flex; gap:8px">
+        <button class="btn secondary" onclick="editCategory('${c.id}')">Edit</button>
+        <button class="btn secondary" onclick="deleteCategory('${c.id}')">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderAccountsList(){
+  const out = $('accountsList');
+  if(!out) return;
+  if(!state.accounts.length){ out.innerHTML = '<div class="muted">No accounts</div>'; return; }
+  out.innerHTML = state.accounts.map(a=>`
+    <div class="list-item">
+      <div>
+        <div style="font-weight:700">${esc(a.name)}</div>
+        <div class="muted">${esc(a.type)} • ${formatCurrency(a.balance||0)}</div>
+      </div>
+      <div style="display:flex; gap:8px">
+        <button class="btn secondary" onclick="editAccount('${a.id}')">Edit</button>
+        <button class="btn secondary" onclick="deleteAccount('${a.id}')">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderAllTransactions(){
+  const out = $('allTxList'); if(!out) return;
+  if(!state.transactions.length){ out.innerHTML = '<div class="muted">No transactions</div>'; return; }
+  const arr = state.transactions.slice().sort((a,b)=> new Date(b.date) - new Date(a.date));
+  out.innerHTML = arr.map(t=>`
+    <div class="list-item">
+      <div>
+        <div style="font-weight:700">${t.category}</div>
+        <div class="muted">${esc(t.date)} • ${esc(t.category)} • ${esc(t.accountName||'')}</div>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center">
+        <div style="font-weight:800; color:${t.type==='income'?'var(--success)':'var(--danger)'}">${t.type==='income'?'+':'-'}${formatCurrency(t.amount)}</div>
+        <div>
+          <button class="btn secondary" onclick="viewTransaction('${t.id}')">View</button>
+          <button class="btn secondary" onclick="editTransaction('${t.id}')">Edit</button>
+          <button class="btn secondary" onclick="deleteTransaction('${t.id}')">Delete</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderDashRecent(){
+  const out = $('dashRecent'); if(!out) return;
+  const arr = state.transactions.slice().sort((a,b)=> new Date(b.date) - new Date(a.date)).slice(0,10);
+  if(!arr.length){ out.innerHTML = '<div class="muted">No recent transactions</div>'; return; }
+  out.innerHTML = arr.map(t=>`
+    <div class="list-item">
+      <div>
+        <div style="font-weight:700">${esc(t.description||t.category)}</div>
+        <div class="muted">${esc(t.date)} • ${esc(t.accountName||'')}</div>
+      </div>
+      <div style="font-weight:800; color:${t.type==='income'?'var(--success)':'var(--danger)'}">${t.type==='income'?'+':'-'}${formatCurrency(t.amount)}</div>
+    </div>
+  `).join('');
+}
+
+/* ========== Charts generation ========== */
+function renderDashCharts(){
+  const tx = state.transactions || [];
+  const income = tx.filter(t=>t.type==='income').reduce((s,t)=>s+Number(t.amount||0),0);
+  const expense = tx.filter(t=>t.type==='expense').reduce((s,t)=>s+Number(t.amount||0),0);
+  const balance = income - expense;
+
+  setText('incVal', formatCurrency(income));
+  setText('expVal', formatCurrency(expense));
+  setText('balVal', formatCurrency(balance));
+
+  // monthly (6 months)
+  const monthly = {};
+  const now = new Date();
+  for(let i=5;i>=0;i--){
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    monthly[key]=0;
+  }
+  tx.forEach(t=>{
+    const d = t.date ? new Date(t.date) : new Date();
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    if(!(key in monthly)) monthly[key]=0;
+    monthly[key] += (t.type==='income' ? Number(t.amount||0) : -Number(t.amount||0));
+  });
+  const labels = Object.keys(monthly);
+  const data = labels.map(k=>monthly[k]);
+
+  // spending by category
+  const catMap = {};
+  tx.filter(t=>t.type==='expense').forEach(t => { catMap[t.category] = (catMap[t.category]||0) + Number(t.amount||0); });
+  const catLabels = Object.keys(catMap);
+  const catValues = catLabels.map(k=>catMap[k]);
+
+  if(window.Chart){
+    const ctx = $('dashCashFlow').getContext('2d');
+    if(dashCashChart) dashCashChart.destroy();
+    dashCashChart = new Chart(ctx, {
+      type:'line',
+      data:{ labels, datasets:[{ label:'Cash flow', data, tension:0.3, borderColor: '#1f6feb', backgroundColor:'rgba(31,111,235,0.08)', fill:true }]},
+      options:{ responsive:true, maintainAspectRatio:false }
+    });
+
+    const ctx2 = $('dashSpendCat').getContext('2d');
+    if(dashSpendChart) dashSpendChart.destroy();
+    dashSpendChart = new Chart(ctx2, {
+      type:'doughnut',
+      data:{ labels: catLabels.length?catLabels:['No data'], datasets:[{ data: catValues.length?catValues:[1] }]},
+      options:{ responsive:true, maintainAspectRatio:false }
+    });
+  }
+  renderDashRecent();
+}
+
+function renderTxnIncExpChart(){
+  const tx = state.transactions || [];
+  const dayMap = {};
+  const now = new Date();
+  for(let i=29;i>=0;i--){
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate()-i);
+    const key = d.toISOString().slice(0,10);
+    dayMap[key] = { income:0, expense:0 };
+  }
+  tx.forEach(t=>{
+    const dkey = t.date ? (new Date(t.date)).toISOString().slice(0,10) : (new Date()).toISOString().slice(0,10);
+    if(!(dkey in dayMap)) dayMap[dkey] = { income:0, expense:0 };
+    if(t.type==='income') dayMap[dkey].income += Number(t.amount||0);
+    else dayMap[dkey].expense += Number(t.amount||0);
+  });
+  const labels = Object.keys(dayMap);
+  const incomeData = labels.map(l=>dayMap[l].income);
+  const expenseData = labels.map(l=>dayMap[l].expense);
+
+  if(window.Chart){
+    const ctx = $('txnIncExp').getContext('2d');
+    if(txnIncExpChart) txnIncExpChart.destroy();
+    txnIncExpChart = new Chart(ctx, {
+      type:'bar',
+      data:{
+        labels,
+        datasets:[
+          { label:'Income', data: incomeData, backgroundColor: 'rgba(16,185,129,0.7)' },
+          { label:'Expense', data: expenseData, backgroundColor: 'rgba(239,68,68,0.7)' }
+        ]
+      },
+      options:{ responsive:true, maintainAspectRatio:false, scales:{ x:{ ticks:{ maxRotation:0, autoSkip:true, maxTicksLimit:10 } } } }
+    });
+  }
+}
+
+function renderAccountsChart(){
+  const acc = (state.accounts||[]);
+  const labels = acc.map(a=>a.name);
+  const data = acc.map(a=>Number(a.balance||0));
+
+  // pick a palette of nice colors
+  const colors = [
+    '#3b82f6', // blue
+    '#06b6d4', // cyan
+    '#10b981', // green
+    '#f59e0b', // amber
+    '#ef4444', // red
+    '#8b5cf6', // purple
+    '#ec4899', // pink
+    '#14b8a6', // teal
+    '#6366f1', // indigo
+    '#84cc16'  // lime
+  ];
+
+  // assign colors in a cycle if there are more accounts than colors
+  const bgColors = data.map((_,i)=> colors[i % colors.length]);
+
+  if(window.Chart){
+    const ctx = $('accountsChart').getContext('2d');
+    if(accountsChart) accountsChart.destroy();
+    accountsChart = new Chart(ctx, {
+      type:'bar',
+      data:{
+        labels,
+        datasets:[{
+          label:'Balance',
+          data,
+          backgroundColor: bgColors
+        }]
+      },
+      options:{
+        responsive:true,
+        maintainAspectRatio:false
+      }
+    });
+  }
+}
+ 
+
+/* ========== Budgets rendering & reset with history ========== */
+function renderBudgets(){
+  const out = $('budgetsList');
+  if(!out) return;
+  if(!state.budgets.length){ out.innerHTML = '<div class="muted">No budgets</div>'; return; }
+  out.innerHTML = state.budgets.map(b=>{
+    const spent = Number(b.spent||0);
+    const pct = b.amount ? Math.min(100, Math.round((spent / b.amount)*100)) : 0;
+    return `
+      <div class="list-item">
+        <div style="flex:1">
+          <div style="font-weight:700">${esc(b.category)}</div>
+          <div class="muted">${esc(b.period)} • Target ${formatCurrency(b.amount)}</div>
+          <div style="height:6px"></div>
+          <div style="background:#f1f5f9; border-radius:8px; overflow:hidden; height:8px"><div style="width:${pct}%; height:100%; background:var(--primary)"></div></div>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center">
+          <div class="muted">${formatCurrency(spent)}</div>
+          <div>
+            <button class="btn secondary" onclick="resetBudget('${b.id}')">Reset Spent</button>
+            <button class="btn secondary" onclick="deleteBudget('${b.id}')">Delete</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function resetBudget(bid){
+  if(!confirm('Reset spent to 0 for this budget and archive the previous state?')) return;
+  try{
+    const bRef = doc(db,'budgets',bid);
+    const bSnap = await getDoc(bRef);
+    if(!bSnap.exists()) return alert('Budget not found');
+    const b = bSnap.data();
+    const prevSpent = Number(b.spent||0);
+    const target = Number(b.amount||0);
+    const flag = prevSpent <= target ? 'under' : 'over';
+    // archive to budgetHistory
+    await addDoc(collection(db,'budgetHistory'), {
+      userId: b.userId || auth.currentUser.uid,
+      budgetId: bid,
+      category: b.category,
+      amountTarget: target,
+      amountSpent: prevSpent,
+      period: b.period || 'monthly',
+      createdAt: new Date(),
+      status: flag
+    });
+    // reset spent
+    await updateDoc(bRef, { spent:0 });
+    alert('Budget reset and archived');
+  } catch(e){ console.error(e); alert('Failed to reset budget'); }
+}
+
+function renderBudgetHistory(){
+  const out = $('budgetHistoryList');
+  if(!out) return;
+
+  if(!state.budgetHistory.length){
+    out.innerHTML = '<div class="muted">No history</div>';
+    return;
+  }
+
+  const arr = state.budgetHistory
+    .slice()
+    .sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt));
+
+  let html = `
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Period</th>
+          <th>Target</th>
+          <th>Spent</th>
+          <th>Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  html += arr.map(h => `
+    <tr>
+      <td>${esc(h.category)}</td>
+      <td>${esc(h.period)}</td>
+      <td>${formatCurrency(h.amountTarget)}</td>
+      <td>${formatCurrency(h.amountSpent)}</td>
+      <td>${new Date(h.createdAt).toLocaleDateString()}</td>
+      <td style="font-weight:700; color:${h.status === 'under' ? '#10b981' : '#ef4444'}">
+        ${h.status === 'under' ? 'Under Budget' : 'Over Budget'}
+      </td>
+    </tr>
+  `).join('');
+
+  html += `</tbody></table>`;
+  out.innerHTML = html;
+}
+
+
+async function deleteBudget(id){
+  if(!confirm('Delete budget?')) return;
+  try{ await deleteDoc(doc(db,'budgets',id)); } catch(e){ console.error(e); }
+}
+
+/* ========== Bills rendering & mark as paid (create next month) ========== */
+function renderBills(){
+  const upcoming = (state.bills||[])
+    .filter(b => !b.paid)
+    .sort((a,b)=> new Date(a.dueDate) - new Date(b.dueDate));
+
+  const paid = (state.bills||[])
+    .filter(b => b.paid)
+    .sort((a,b)=> new Date(b.paidAt||0) - new Date(a.paidAt||0));
+
+  $('upcomingBills').innerHTML = upcoming.length ? upcoming.map(b=>`
+    <div class="list-item">
+      <div>
+        <div style="font-weight:700">${esc(b.name)}</div>
+        <div class="muted">Due ${esc(b.dueDate)}</div>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center">
+        <div class="muted">${formatCurrency(b.amount)}</div>
+        <div>
+          <button class="btn secondary" onclick="markBillPaid('${b.id}')">Mark as Paid</button>
+          <button class="btn secondary" onclick="deleteBill('${b.id}')">Delete</button>
+        </div>
+      </div>
+    </div>
+  `).join('') : '<div class="muted">No upcoming bills</div>';
+
+  $('paidBills').innerHTML = paid.length ? paid.map(b=>`
+    <div class="list-item">
+      <div>
+        <div style="font-weight:700">${esc(b.name)}</div>
+        <div class="muted">Paid at ${new Date(b.paidAt).toLocaleDateString()}</div>
+      </div>
+      <div class="muted">${formatCurrency(b.amount)}</div>
+    </div>
+  `).join('') : '<div class="muted">No paid bills</div>';
+}
+
+async function markBillPaid(id){
+  if(!confirm('Mark this bill as paid? This will also create the same bill for next month.')) return;
+  try{
+    const bRef = doc(db,'bills',id);
+    const bSnap = await getDoc(bRef);
+    if(!bSnap.exists()) return alert('Bill not found');
+    const b = bSnap.data();
+    // update current as paid with timestamp
+    const paidAt = new Date().toISOString();
+    await updateDoc(bRef, { paid:true, paidAt });
+    // create next month's bill (same name & amount, dueDate +1 month, paid=false)
+    const origDue = new Date(b.dueDate);
+    const nextDue = new Date(origDue.getFullYear(), origDue.getMonth()+1, Math.min(origDue.getDate(),28)); // avoid month overflow
+    await addDoc(collection(db,'bills'), {
+      userId: b.userId || auth.currentUser.uid,
+      name: b.name,
+      amount: b.amount,
+      dueDate: nextDue.toISOString().slice(0,10),
+      paid: false,
+      createdAt: new Date()
+    });
+    alert('Bill marked paid and next month scheduled.');
+  } catch(e){ console.error(e); alert('Failed to mark paid'); }
+}
+
+async function deleteBill(id){
+  if(!confirm('Delete bill?')) return;
+  try{ await deleteDoc(doc(db,'bills',id)); }catch(e){ console.error(e); }
+}
+
+/* ========== Transactions CRUD (with View modal) ========== */
+$('txnType').addEventListener('change', ()=> { onCategoriesUpdated(); });
+
+$('addTxn').addEventListener('click', async ()=>{
+  const user = auth.currentUser; if(!user) return alert('Sign in');
+  const type = $('txnType').value;
+  const category = $('txnCategory').value;
+  const accountId = $('txnAccount').value;
+  const amount = Number($('txnAmount').value||0);
+  const date = $('txnDate').value || (new Date()).toISOString().slice(0,10);
+  const desc = $('txnDesc').value || '';
+  if(!category || !amount) return alert('Category and amount required');
+  try{
+    const accountName = state.accounts.find(a=>a.id===accountId)?.name || '';
+    await addDoc(collection(db,'transactions'), { userId:user.uid, type, category, accountId, accountName, amount, date, description:desc, createdAt:new Date() });
+    // update account balance
+    if(accountId){
+      const acc = state.accounts.find(a=>a.id===accountId);
+      if(acc){
+        const newBal = Number(acc.balance||0) + (type==='income' ? Number(amount) : -Number(amount));
+        await updateDoc(doc(db,'accounts',accountId), { balance:newBal });
+      }
+    }
+    $('txnAmount').value=''; $('txnDesc').value='';
+    alert('Transaction added');
+  }catch(e){ console.error(e); alert('Failed to add transaction'); }
+});
+
+window.viewTransaction = async (id)=>{
+  const t = state.transactions.find(x=>x.id===id);
+  if(!t) return alert('Transaction not found');
+  const body = $('viewModalBody');
+  const desc = t.description && t.description.trim() ? esc(t.description) : '<i>No description available.</i>';
+  body.innerHTML = `
+    <div style="font-weight:700; margin-bottom:6px">${esc(t.category)} • ${esc(t.accountName||'')}</div>
+    <div class="muted" style="margin-bottom:8px">${esc(t.date)} • ${t.type}</div>
+    <div style="font-size:1.1rem; margin-bottom:12px">${t.type==='income'?'+':'-'} ${formatCurrency(t.amount)}</div>
+    <div>${desc}</div>
+  `;
+  $('viewModal').style.display = 'flex';
+};
+
+$('closeModal').addEventListener('click', ()=> {
+  $('viewModal').style.display = 'none';
+});
+
+window.editTransaction = async (id)=>{
+  const t = state.transactions.find(x=>x.id===id);
+  if(!t) return;
+  const newDesc = prompt('Description', t.description || '');
+  if(newDesc === null) return;
+  const newAmount = prompt('Amount', String(t.amount||0));
+  if(newAmount === null) return;
+  try{ await updateDoc(doc(db,'transactions',id), { description: newDesc, amount: Number(newAmount) }); } catch(e){ console.error(e); }
+};
+window.deleteTransaction = async (id)=>{
+  if(!confirm('Delete transaction?')) return;
+  try{ await deleteDoc(doc(db,'transactions',id)); } catch(e){ console.error(e); }
+};
+
+/* ========== Accounts CRUD ========== */
+$('addAccountBtn').addEventListener('click', async ()=>{
+  const user = auth.currentUser; if(!user) return alert('Sign in');
+  const name = $('accName').value.trim(); const balance = Number($('accStart').value||0); const type = $('accType').value;
+  if(!name) return alert('Name required');
+  try{ await addDoc(collection(db,'accounts'), { userId:user.uid, name, balance, type, createdAt:new Date() }); $('accName').value=''; $('accStart').value=''; }
+  catch(e){ console.error(e); alert('Failed to add account'); }
+});
+window.editAccount = async (id)=>{
+  const a = state.accounts.find(x=>x.id===id); if(!a) return;
+  const name = prompt('Name', a.name); if(name===null) return;
+  const bal = prompt('Balance', String(a.balance||0)); if(bal===null) return;
+  try{ await updateDoc(doc(db,'accounts',id), { name, balance:Number(bal) }); }catch(e){ console.error(e); }
+};
+window.deleteAccount = async (id)=>{ if(!confirm('Delete account?')) return; try{ await deleteDoc(doc(db,'accounts',id)); }catch(e){ console.error(e); } };
+
+/* ========== Categories CRUD ========== */
+$('addCatBtn').addEventListener('click', async ()=>{
+  const user = auth.currentUser; if(!user) return alert('Sign in');
+  const name = $('catName').value.trim(); const type = $('catType').value;
+  if(!name) return alert('Name required');
+  try{ await addDoc(collection(db,'categories'), { userId:user.uid, name, type, createdAt:new Date() }); $('catName').value=''; }
+  catch(e){ console.error(e); }
+});
+window.editCategory = async (id)=>{
+  const c = state.categories.find(x=>x.id===id); if(!c) return;
+  const name = prompt('Name', c.name); if(name===null) return;
+  const type = prompt('Type (expense|income)', c.type) || c.type;
+  try{ await updateDoc(doc(db,'categories',id), { name, type }); } catch(e){ console.error(e); }
+};
+window.deleteCategory = async (id)=>{ if(!confirm('Delete category?')) return; try{ await deleteDoc(doc(db,'categories',id)); } catch(e){ console.error(e); } };
+
+/* ========== Budgets CRUD ========== */
+$('addBudget').addEventListener('click', async ()=>{
+  const user = auth.currentUser; if(!user) return alert('Sign in');
+  const category = $('budgetCategory').value; const amount = Number($('budgetAmount').value||0); const period = $('budgetPeriod').value;
+  if(!category || !amount) return alert('Category and amount required');
+  try{ await addDoc(collection(db,'budgets'), { userId:user.uid, category, amount, period, spent:0, createdAt:new Date() }); $('budgetAmount').value=''; }
+  catch(e){ console.error(e); }
+});
+
+/* ========== Bills CRUD ========== */
+$('addBill').addEventListener('click', async ()=>{
+  const user = auth.currentUser; if(!user) return alert('Sign in');
+  const name = $('billName').value.trim(); const amount = Number($('billAmount').value||0); const due = $('billDue').value;
+  if(!name || !amount || !due) return alert('Name, amount and due date required');
+  try{ await addDoc(collection(db,'bills'), { userId:user.uid, name, amount, dueDate: due, paid:false, createdAt:new Date() }); $('billName').value=''; $('billAmount').value=''; $('billDue').value=''; }
+  catch(e){ console.error(e); }
+});
+
+/* ========== Settings: Explore, Import, Export ========== */
+$('loadExplore').addEventListener('click', async ()=>{
+  const col = $('exploreCollection').value;
+  if(!confirm(`Load all documents from collection "${col}"?`)) return;
+  try{
+    let docs = [];
+    if(col === 'budgetHistory'){
+      const snap = await getDocs(query(collection(db,'budgetHistory'), where('userId','==', auth.currentUser.uid)));
+      snap.forEach(d=>docs.push({ id:d.id, ...d.data() }));
+    } else if(col === 'all'){
+      // not used here
+    } else {
+      const snap = await getDocs(query(collection(db,col), where('userId','==', auth.currentUser.uid)));
+      snap.forEach(d=>docs.push({ id:d.id, ...d.data() }));
+    }
+    $('exploreOutput').textContent = JSON.stringify(docs, null, 2);
+  } catch(e){ console.error(e); alert('Failed to load'); }
+});
+
+$('clearExplore').addEventListener('click', ()=> { $('exploreOutput').textContent = ''; });
+
+$('exportBtn').addEventListener('click', async ()=>{
+  const which = $('exportCollection').value;
+  try{
+    const userId = auth.currentUser ? auth.currentUser.uid : null;
+    if(!userId) return alert('Sign in');
+    const toExport = {};
+    const collections = which === 'all' ? ['transactions','accounts','categories','budgets','bills','budgetHistory'] : [which];
+    for(const c of collections){
+      const arr = [];
+      const q = c === 'budgetHistory' ? query(collection(db,c), where('userId','==', userId)) : query(collection(db,c), where('userId','==', userId));
+      const snap = await getDocs(q);
+      snap.forEach(d=>arr.push({ id:d.id, ...d.data() }));
+      toExport[c] = arr;
+    }
+    const blob = new Blob([JSON.stringify(toExport, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `my-finance-export-${new Date().toISOString().slice(0,10)}.json`; document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  } catch(e){ console.error(e); alert('Export failed'); }
+});
+
+$('importBtn').addEventListener('click', async ()=>{
+  const f = $('importFile').files[0];
+  if(!f) return alert('Choose a JSON file');
+  if(!confirm('Importing will create documents in your account collections. Proceed?')) return;
+  try{
+    const txt = await f.text();
+    const data = JSON.parse(txt);
+    const userId = auth.currentUser ? auth.currentUser.uid : null;
+    if(!userId) return alert('Sign in');
+    // data format: { transactions: [...], accounts:[...], ... }
+    for(const [col, arr] of Object.entries(data)){
+      if(!Array.isArray(arr)) continue;
+      for(const item of arr){
+        // ensure userId is set and remove id if present
+        const docData = {...item}; delete docData.id;
+        docData.userId = userId;
+        await addDoc(collection(db,col), docData);
+      }
+    }
+    alert('Import complete (created documents).');
+  } catch(e){ console.error(e); alert('Import failed'); }
+});
+
+/* ========== Budget spent computation (update budgets spent automatically) ========== */
+async function renderBudgetsSpent(){
+  const uid = auth.currentUser ? auth.currentUser.uid : null; if(!uid) return;
+  try{
+    for(const b of state.budgets || []){
+      const spent = (state.transactions || []).filter(t => t.type==='expense' && t.category === b.category).reduce((s,t)=>s + Number(t.amount||0), 0);
+      if(Number(b.spent||0) !== Number(spent)){
+        await updateDoc(doc(db,'budgets',b.id), { spent });
+      }
+    }
+  } catch(e){ console.error('renderBudgetsSpent', e); }
+}
+
+/* ========== Dashboard render wrapper ========== */
+function renderDashboard(){
+  renderDashCharts();
+}
+
+/* ========== Initial Chart.js load ========== */
+import('https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js').then(()=>{
+  // Chart loaded
+}).catch(err=> console.warn('Chart load failed', err));
+
+/* ========== Initial UI wiring ========== */
+showScreen('dashboard');
+
+// small interval to refresh charts (non-destructive)
+setInterval(()=>{
+  try{ renderDashCharts(); renderTxnIncExpChart(); renderAccountsChart(); } catch(e) {}
+}, 6000);
+
+/* ========== Expose functions for inline handlers ========== */
+window.editCategory = window.editCategory;
+window.deleteCategory = window.deleteCategory;
+window.editTransaction = window.editTransaction;
+window.deleteTransaction = window.deleteTransaction;
+window.editAccount = window.editAccount;
+window.deleteAccount = window.deleteAccount;
+window.resetBudget = resetBudget;
+window.deleteBudget = deleteBudget;
+window.markBillPaid = markBillPaid;
+window.deleteBill = deleteBill;
+window.viewTransaction = viewTransaction;
+
+/* ========== Console helper ========== */
+console.info('My Finance app loaded. If selects jump back, open console to inspect.');
+/* ========== Dark Mode ========== */
+const darkBtn = $('darkToggle');
+function applyTheme(theme){
+  if(theme==='dark'){ document.body.classList.add('dark'); darkBtn.textContent='☀️'; }
+  else { document.body.classList.remove('dark'); darkBtn.textContent='🌙'; }
+  localStorage.setItem('theme', theme);
+}
+darkBtn.addEventListener('click', ()=>{
+  const newTheme = document.body.classList.contains('dark') ? 'light' : 'dark';
+  applyTheme(newTheme);
+});
+applyTheme(localStorage.getItem('theme') || 'light');
+
+</script>
+
+</body>
+</html>

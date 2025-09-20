@@ -1,289 +1,390 @@
-<!DOCTYPE html>
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cosmic Login Experience</title>
+  <title>My Life Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <style>
-    * {margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif;}
+    :root {
+      --bg-light: #f8fafc;
+      --bg-dark: #1f2937;
+      --card-light: #ffffff;
+      --card-dark: #374151;
+      --text-light: #1f2937;
+      --text-dark: #f3f4f6;
+      --accent-blue: #3b82f6;
+      --accent-green: #22c55e;
+      --shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    }
     body {
-      min-height:100vh;
-      background:linear-gradient(-45deg,#ee7752,#e73c7e,#23a6d5,#23d5ab);
-      background-size:400% 400%;
-      animation:gradient 15s ease infinite;
-      display:flex; justify-content:center; align-items:center;
-      overflow:hidden;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+      background-color: var(--bg-light);
+      color: var(--text-light);
+      transition: all 0.3s ease;
     }
-    @keyframes gradient {
-      0%{background-position:0% 50%}
-      50%{background-position:100% 50%}
-      100%{background-position:0% 50%}
+    body.dark {
+      background-color: var(--bg-dark);
+      color: var(--text-dark);
     }
-    .container {
-      position:relative;
-      width:800px; height:500px;
-      border-radius:20px;
-      backdrop-filter:blur(10px);
-      background:rgba(255,255,255,0.1);
-      box-shadow:0 25px 45px rgba(0,0,0,0.1);
-      border:1px solid rgba(255,255,255,0.2);
-      overflow:hidden;
+    .header {
+      background-color: var(--card-light);
+      box-shadow: var(--shadow);
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
-    .form-container {position:absolute; top:0; width:100%; height:100%;
-      display:flex; justify-content:center; align-items:center;
-      transition:all 0.6s ease-in-out;}
-    .login-container {left:0; width:50%; z-index:2;}
-    .container.active .login-container {transform:translateX(100%); opacity:0;}
-    .register-container {right:-50%; width:50%; opacity:0; z-index:1;}
-    .container.active .register-container {transform:translateX(-100%); opacity:1; z-index:5;}
-    form {
-      background:rgba(255,255,255,0.9);
-      padding:40px; border-radius:15px;
-      width:100%; max-width:320px;
-      box-shadow:0 8px 32px rgba(31,38,135,0.37);
+    body.dark .header {
+      background-color: var(--card-dark);
     }
-    h1 {color:#333; margin-bottom:30px; text-align:center; font-size:28px;}
-    .input-group {position:relative; margin-bottom:25px;}
-    input {
-      width:100%; padding:12px 15px; border:none;
-      background:#f0f0f0; border-radius:8px; outline:none;
-      color:#333; font-size:16px; transition:all 0.3s;
+    .header .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
-    input:focus {background:#e0e0e0; box-shadow:0 0 10px rgba(0,0,0,0.1);}
-    label {
-      position:absolute; top:12px; left:15px; color:#666;
-      font-size:16px; pointer-events:none; transition:all 0.3s;
+    .header .logo i {
+      font-size: 2rem;
+      color: darkgray;
     }
-    input:focus ~ label, input:valid ~ label {
-      top:-20px; left:0; font-size:14px; color:#e73c7e;
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 0;
+      color: darkgrey;
     }
-    button {
-      width:100%; padding:12px; border:none; border-radius:8px;
-      background:linear-gradient(45deg,#e73c7e,#23a6d5);
-      color:white; font-size:16px; font-weight:bold; cursor:pointer;
-      transition:all 0.3s; box-shadow:0 5px 15px rgba(0,0,0,0.2);
+    .header .toggle {
+      padding: 10px 20px;
+      background-color: var(--accent-blue);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
     }
-    button:hover {transform:translateY(-3px); box-shadow:0 8px 20px rgba(0,0,0,0.3);}
-    .toggle-container {position:absolute; top:0; left:50%; width:50%; height:100%;
-      overflow:hidden; transition:all 0.6s ease-in-out; z-index:1000;}
-    .container.active .toggle-container {transform:translateX(-100%);}
-    .toggle {
-      background:linear-gradient(to right,#e73c7e,#23a6d5);
-      height:100%; color:white; position:relative; left:-100%; width:200%;
-      transform:translateX(0); transition:all 0.6s ease-in-out;
+    .header .toggle:hover {
+      background-color: #2563eb;
     }
-    .container.active .toggle {transform:translateX(50%);}
-    .toggle-panel {
-      position:absolute; width:50%; height:100%;
-      display:flex; flex-direction:column; justify-content:center; align-items:center;
-      padding:0 30px; text-align:center; top:0; transition:all 0.6s;
+    .theme-switch {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 1rem;
     }
-    .toggle-left {transform:translateX(-200%);}
-    .container.active .toggle-left {transform:translateX(0);}
-    .toggle-right {right:0;}
-    .container.active .toggle-right {transform:translateX(200%);}
-    .toggle-btn {background:transparent; border:2px solid white; padding:10px 30px;}
-    .animation-container {position:absolute; width:100%; height:100%; top:0; left:0; z-index:0;}
-    .shape {position:absolute; border-radius:50%; background:rgba(255,255,255,0.1);
-      animation:float 15s infinite ease-in-out;}
-    @keyframes float {
-      0%,100%{transform:translate(0,0) rotate(0deg);}
-      25%{transform:translate(20px,40px) rotate(90deg);}
-      50%{transform:translate(0,80px) rotate(180deg);}
-      75%{transform:translate(-20px,40px) rotate(270deg);}
-    }
-    .bicycle {position:absolute; bottom:-100px; left:-200px; font-size:60px;
-      animation:ride 20s infinite linear; transform:scaleX(-1);}
-    @keyframes ride {
-      0%{transform:translateX(-200px) scaleX(-1);}
-      49%{transform:translateX(1000px) scaleX(-1);}
-      50%{transform:translateX(1000px) scaleX(1);}
-      99%{transform:translateX(-200px) scaleX(1);}
-      100%{transform:translateX(-200px) scaleX(-1);}
-    }
-    .confetti {position:absolute; width:10px; height:10px; opacity:0;}
-    @keyframes confettiFall {
-      0%{transform:translateY(0) rotate(0deg);opacity:1;}
-      100%{transform:translateY(500px) rotate(360deg);opacity:0;}
-    }
-    .star {position:absolute; width:2px; height:100px;
-      background:linear-gradient(transparent,white);
-      animation:shoot 5s linear infinite;}
-    @keyframes shoot {
-      0%{transform:translateX(-200px) translateY(-200px) rotate(45deg); opacity:0;}
-      10%{opacity:1;}
-      100%{transform:translateX(800px) translateY(600px) rotate(45deg); opacity:0;}
-    }
-    /* For tablets */
-@media (max-width: 768px) {
-  .grid-2, .grid-3 {
-    grid-template-columns: 1fr; /* stack columns */
-  }
-  header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-  .controls {
-    width: 100%;
-    justify-content: space-between;
-    flex-wrap: wrap;
-  }
-}
 
-/* For phones */
-@media (max-width: 480px) {
-  body {
-    font-size: 14px;
-    padding: 5px;
-  }
-  header {
-    font-size: 16px;
-  }
-  .btn {
-    font-size: 12px;
-    padding: 8px 10px;
-  }
-  .card {
-    padding: 10px;
-  }
-  .transaction-item {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .stat-card .stat-value {
-    font-size: 18px;
-  }
-}
+    .theme-switch .label {
+      color: var(--text-light);
+    }
+
+    body.dark .theme-switch .label {
+      color: var(--text-dark);
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 28px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: 0.4s;
+      border-radius: 28px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px; width: 20px;
+      left: 4px; bottom: 4px;
+      background-color: white;
+      transition: 0.4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #3b82f6;
+    }
+    input:checked + .slider:before {
+      transform: translateX(22px);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 40px auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      padding: 0 20px;
+    }
+    .card {
+      background-color: var(--card-light);
+      border-radius: 12px;
+      padding: 19px;
+      box-shadow: var(--shadow);
+      text-align: center;
+      transition: transform 0.3s ease, background-color 0.3s ease;
+    }
+    body.dark .card {
+      background-color: var(--card-dark);
+    }
+    .card:hover {
+      transform: translateY(-5px);
+    }
+    .card i {
+      font-size: 2.5rem;
+      margin-bottom: 16px;
+      color: var(--accent-blue);
+    }
+    .card h2 {
+      margin: 0;
+      font-size: 1.75rem;
+      font-weight: 600;
+    }
+    .card h2 a {
+      text-decoration: none;
+      color: var(--accent-blue);
+      transition: color 0.3s ease;
+    }
+    .card h2 a:hover {
+      color: #2563eb;
+    }
+    .card p {
+      color: #6b7280;
+      margin: 12px 0;
+      font-size: 1rem;
+    }
+    body.dark .card p {
+      color: #a0aec0;
+    }
+    .card.financial i, .card.financial h2 a { color: #22c55e; }   /* blue */
+    .card.life i, .card.life h2 a { color: #ef4444; }            /* green */
+    .card.shopping i, .card.shopping h2 a { color: #eab308; }    /* yellow */
+    .card.studying i, .card.studying h2 a { color: #a855f7; }    /* purple */
+    .card.languages i, .card.languages h2 a { color: #f97316; }  /* orange */
+    .card.health i, .card.health h2 a { color: #ef4444; }        /* red */
+    .card.travel i, .card.travel h2 a { color: #14b8a6; }        /* teal */
+    .card.goals i, .card.goals h2 a { color: #6366f1; }          /* indigo */
+    .card.list i, .card.list h2 a { color: #1f2937;  }
+    .card.productivity i, .card.productivity h2 a { color: #0ea5e9; } /* sky blue */
+    .card.list{
+      width: 1150px;
+
+    }
+    footer {
+      background-color: var(--card-light);
+      padding: 20px 40px;
+      text-align: center;
+      color: #6b7280;
+      font-size: 0.9rem;
+      box-shadow: var(--shadow);
+    }
+    body.dark footer {
+      background-color: var(--card-dark);
+      color: #a0aec0;
+    }
+    footer a {
+      color: var(--accent-blue);
+      text-decoration: none;
+      margin: 0 10px;
+      font-weight: 600;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+    body.dark footer a {
+      color: #60a5fa;
+    }
+    /* Responsive tweaks */
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 12px 20px;
+      }
+
+      .header h1 {
+        font-size: 1.5rem;
+      }
+
+      .container {
+        grid-template-columns: 1fr; /* stack all cards */
+        margin: 20px auto;
+        gap: 16px;
+      }
+
+      .card {
+        padding: 16px;
+      }
+
+      .card h2 {
+        font-size: 1.25rem;
+      }
+
+      .card p {
+        font-size: 0.9rem;
+      }
+
+      /* Fix "Coming Up" card */
+      .card.list {
+        width: 100% !important;
+      }
+
+      footer {
+        font-size: 0.8rem;
+        padding: 12px 20px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .header {
+        padding: 10px 15px;
+      }
+
+      .header h1 {
+        font-size: 1.25rem;
+      }
+
+      .card i {
+        font-size: 2rem;
+      }
+    }
+
   </style>
 </head>
 <body>
-  <div class="container" id="container">
-    <div class="form-container login-container">
-      <form onsubmit="return false;">
-        <h1>Login</h1>
-        <div class="input-group"><input id="loginEmail" type="email" required><label>Email</label></div>
-        <div class="input-group"><input id="loginPass" type="password" required><label>Password</label></div>
-        <button type="button" id="loginBtn">Sign In</button>
-      </form>
+  <header class="header">
+    <div class="logo">
+      <i class="fas fa-tachometer-alt"></i>
+      <h1>My Life Dashboard</h1>
     </div>
-    <div class="form-container register-container">
-      <form onsubmit="return false;">
-        <h1>Create Account</h1>
-        <div class="input-group"><input id="regUser" type="text" required><label>Username</label></div>
-        <div class="input-group"><input id="regEmail" type="email" required><label>Email</label></div>
-        <div class="input-group"><input id="regPass" type="password" required><label>Password</label></div>
-        <button type="button" id="registerBtn">Sign Up</button>
-      </form>
+    <div class="theme-switch">
+      <span class="label">Light</span>
+      <label class="switch">
+        <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+        <span class="slider"></span>
+      </label>
+      <span class="label">Dark</span>
     </div>
-    <div class="toggle-container">
-      <div class="toggle">
-        <div class="toggle-panel toggle-left">
-          <h1>Welcome Back!</h1>
-          <p>Enter your personal details to use all site features</p>
-          <button class="toggle-btn" id="login">Sign In</button>
-        </div>
-        <div class="toggle-panel toggle-right">
-          <h1>Hello, Friend!</h1>
-          <p>Register with your personal details to use all site features</p>
-          <button class="toggle-btn" id="register">Sign Up</button>
-        </div>
-      </div>
+
+  </header>
+  <div class="container">
+    <div class="card financial">
+      <i class="fas fa-dollar-sign"></i>
+      <h2><a href="finance-app/finace.html">Financial</a></h2>
+      <p>Manage budgets, bills, and expenses</p>
     </div>
-    <div class="animation-container" id="animationContainer">
-      <div class="bicycle">🚴</div>
+    <div class="card life">
+      <i class="fas fa-calendar-alt"></i>
+      <h2><a href="life_management.html">Life Management</a></h2>
+      <p>Appointments, tasks, and schedule</p>
+    </div>
+    <div class="card shopping">
+      <i class="fas fa-shopping-cart"></i>
+      <h2><a href="shopping_list.html">Shopping List</a></h2>
+      <p>Groceries and household items</p>
+    </div>
+    <div class="card studying">
+      <i class="fas fa-book"></i>
+      <h2><a href="studying.html">Studying</a></h2>
+      <p>Courses, materials, and progress</p>
+    </div>
+    <div class="card languages">
+      <i class="fas fa-language"></i>
+      <h2><a href="languages.html">Languages</a></h2>
+      <p>Vocabulary and grammar practice</p>
+    </div>
+    <div class="card health_fitness">
+      <i class="fas fa-heartbeat"></i>
+      <h2><a href="health_fitness.html">Health & Fitness</a></h2>
+      <p>Workouts, meals, and wellness</p>
+    </div>
+    <div class="card travel">
+      <i class="fas fa-plane"></i>
+      <h2><a href="travel.html">Travel</a></h2>
+      <p>Plans, bookings, and itineraries</p>
+    </div>
+    <div class="card goals">
+      <i class="fas fa-bullseye"></i>
+      <h2><a href="goals.html">Goals</a></h2>
+      <p>Personal and professional targets</p>
+    </div>
+    <div class="card productivity">
+      <i class="fas fa-clock"></i>
+      <h2><a href="productivity.html">Productivity</a></h2>
+      <p>Track tasks, projects, and deadlines</p>
+    </div>
+    <div class="card list">
+      <i class=""></i>
+      <h2><a href="list.html">Coming Up </a></h2>
     </div>
   </div>
+  <footer>
+    <p>My Life Dashboard © 2023 • All rights reserved</p>
+    <p>
+      <a href="#">Privacy Policy</a> |
+      <a href="#">Terms of Service</a> |
+      <a href="#">Contact Us</a>
+    </p>
+  </footer>
   <script>
-    const container=document.getElementById('container');
-    const registerBtn=document.getElementById('register');
-    const loginBtn=document.getElementById('login');
-    const loginFormBtn=document.getElementById('loginBtn');
-    const registerFormBtn=document.getElementById('registerBtn');
-    const animationContainer=document.getElementById('animationContainer');
-    registerBtn.addEventListener('click',()=>container.classList.add('active'));
-    loginBtn.addEventListener('click',()=>container.classList.remove('active'));
-    for(let i=0;i<15;i++){const s=document.createElement('div');s.classList.add('shape');
-      const size=Math.random()*80+20;s.style.width=`${size}px`;s.style.height=`${size}px`;
-      const colors=['rgba(255,100,100,0.3)','rgba(100,255,100,0.3)','rgba(100,100,255,0.3)','rgba(255,255,100,0.3)','rgba(255,100,255,0.3)','rgba(100,255,255,0.3)'];
-      s.style.background=colors[Math.floor(Math.random()*colors.length)];
-      s.style.left=`${Math.random()*100}%`;s.style.top=`${Math.random()*100}%`;
-      s.style.animationDelay=`${Math.random()*5}s`;s.style.animationDuration=`${15+Math.random()*10}s`;
-      animationContainer.appendChild(s);
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
     }
-    setInterval(()=>{
-      const star=document.createElement('div');star.classList.add('star');
-      star.style.left=Math.random()*window.innerWidth+'px';
-      star.style.top=Math.random()*200+'px';
-      animationContainer.appendChild(star);
-      setTimeout(()=>star.remove(),5000);
-    },3000);
-    let users;
-    try {
-      users = JSON.parse(localStorage.getItem('users')) || [];
-      if (!Array.isArray(users)) users = [];  // force reset if corrupted
-    } catch (e) {
-      users = [];  // fallback if JSON.parse fails
-    }
-    loginFormBtn.addEventListener('click',(event)=>{
-      event.preventDefault();
-      const email=document.getElementById('loginEmail').value.trim();
-      const pass=document.getElementById('loginPass').value.trim();
-      const account=users.find(u=>u.email===email&&u.pass===pass);
-      if(account){
-        sessionStorage.setItem('loggedIn','true');
-        sessionStorage.setItem('currentUser',account.user);
-        createConfetti();document.querySelector('.bicycle').style.animation='ride 8s linear forwards';
-        setTimeout(()=>{window.location.href='fin23.html';},2000);
-      }else{alert('Invalid credentials');}
-    });
-
-    document.getElementById('registerBtn').addEventListener('click',(event)=>{
-      event.preventDefault();
-
-      const user = document.getElementById('regUser').value.trim();
-      const email = document.getElementById('regEmail').value.trim();
-      const pass = document.getElementById('regPass').value.trim();
-
-      if(user && email && pass){
-        let users;
-        try {
-          users = JSON.parse(localStorage.getItem('users')) || [];
-          if (!Array.isArray(users)) users = [];
-        } catch (e) {
-          users = [];
-        }
-
-        if(users.find(u => u.email === email)){
-          alert('Email already registered');
-          return;
-        }
-
-        // Save account
-        users.push({user,email,pass});
-        localStorage.setItem('users', JSON.stringify(users));
-
-        // Auto-login
-        sessionStorage.setItem('loggedIn','true');
-        sessionStorage.setItem('currentUser', user);
-
-        alert('Account created! Redirecting...');
-        setTimeout(()=>{window.location.href='fin23.html';},1500);
-      } else {
-        alert('Fill all fields');
-      }
-    });
-
-    function createConfetti(){
-      for(let i=0;i<100;i++){
-        const c=document.createElement('div');c.classList.add('confetti');
-        const colors=['#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff','#00ffff'];
-        c.style.background=colors[Math.floor(Math.random()*colors.length)];
-        c.style.left=Math.random()*100+'%';c.style.top=Math.random()*100+'%';
-        c.style.width=Math.random()*10+5+'px';c.style.height=Math.random()*10+5+'px';
-        c.style.animation=`confettiFall ${Math.random()*3+2}s linear forwards`;
-        animationContainer.appendChild(c);setTimeout(()=>c.remove(),5000);
-      }
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.classList.add('dark');
     }
   </script>
 </body>
