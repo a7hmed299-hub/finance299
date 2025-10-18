@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Smart Shopping List — Firebase</title>
+  <style>
+        /* Base styles for full screen */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        html, body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+        }
+        
+        .app-container {
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            overflow: hidden;
+        }
+        
+        /* Login/Register Screen */
+        .auth-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(to right, #667eea, #764ba2);
+            color: white;
+            text-align: center;
+        }
+        
+        .auth-form {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .auth-form h2 {
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .auth-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .auth-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+            margin: 0.5rem 0;
+        }
+        
+        .auth-btn:hover {
+            background: #f0f0f0;
+            transform: translateY(-1px);
+        }
+        
+        .toggle-auth {
+            margin-top: 1rem;
+            opacity: 0.8;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        
+        /* Main App */
+        .main-app {
+            display: none;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            flex-shrink: 0;
+        }
+        
+        .nav-tab {
+            flex: 1;
+            padding: 1rem;
+            text-align: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            color: #6b7280;
+        }
+        
+        .nav-tab.active {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            background: white;
+        }
+        
+        .nav-tab:hover {
+            background: #e2e8f0;
+        }
+        
+        .tab-content {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Inline Add Form (Easier: Always visible under header) */
+        .add-section {
+            background: #f9fafb;
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            flex-shrink: 0;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr) auto;
+            gap: 0.5rem;
+            align-items: end;
+        }
+        
+        .form-input {
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .add-submit-btn {
+            padding: 0.75rem;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .add-submit-btn:hover {
+            background: #059669;
+        }
+		/* Header */
+		.app-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 12px 24px;
+		background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+		color: #fff;
+		}
+
+		.header-left {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		}
+
+		.logo {
+		width: 42px;
+		height: 42px;
+		border-radius: 8px;
+		background:turquoise;
+		color: white;
+		padding: 4px;
+		}
+
+		.site-title {
+		font-size: 20px;
+		font-weight: 700;
+		letter-spacing: 0.3px;
+		}
+
+		.nav-menu {
+		display: flex;
+		gap: 20px;
+		align-items: center;
+		}
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+        }
+        
+        .nav-links a:hover {
+            color: blue;
+            text-shadow: 0 0 8px turquoise;
+            background: turquoise;
+        }
+
+		.nav-link.active::after {
+		content: '';
+		position: absolute;
+		bottom: -4px;
+		left: 0;
+		width: 100%;
+		height: 2px;
+		background: #fff;
+		}
+       .header-right { 
+		display:flex;
+		align-items:center;
+		gap:5px 
+	    }
+		.btn-light {
+		background: #fff;
+		color: #2575fc;
+		border: none;
+		padding: 8px 14px;
+		border-radius: 8px;
+		font-weight: 700;
+		cursor: pointer;
+		transition: background 0.2s;
+		}
+
+		.btn-light:hover {
+		background: #e2e8f0;
+		}
+
+		/* --- Footer Styling --- */
+		.footer {
+		background: linear-gradient(90deg, #2575fc 0%, #6a11cb 100%);
+		color: #fff;
+		padding: 16px 24px;
+		border-top: 2px solid rgba(255,255,255,0.15);
+		font-size: 14px;
+		}
+		.footer-content {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		align-items: center;
+		gap: 12px;
+		}
+		.footer-summary {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 16px;
+		}
+		.footer-brand {
+		font-weight: 500;
+		opacity: 0.9;
+		}
+		.footer-brand p {
+		margin: 0;
+		}
+
+        /* Shopping List Style: Horizontal-ish, table-like rows */
+        .item-row {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            background: #f9fafb;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        
+        .item-row:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .item-row.completed {
+            opacity: 0.7;
+            background: #ecfdf5;
+            border-color: #bbf7d0;
+        }
+        
+        .item-checkbox {
+            margin-right: 0.5rem;
+            width: 18px;
+            height: 18px;
+        }
+        
+        .item-col {
+            flex: 1;
+            padding: 0 0.25rem;
+        }
+        
+        .item-name {
+            font-weight: 600;
+        }
+        
+        .item-quantity, .item-price, .item-link {
+            color: #6b7280;
+            font-size: 0.8rem;
+        }
+        
+        .item-price {
+            color: #059669;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .item-link {
+            word-break: break-all;
+        }
+        
+        .item-link a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .item-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .item-actions {
+            display: flex;
+            gap: 0.25rem;
+            margin-left: 0.5rem;
+        }
+        
+        .btn {
+            padding: 0.25rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            width: 50px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+		.header-bottom {
+			margin-top: 6px;
+			text-align: center;
+			font-size: 14px;
+			opacity: 0.9;			
+		}
+        
+        .btn-edit { background: #f59e0b; color: white; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-danger { background: #ef4444; color: white; }
+        
+        .btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+        }
+        
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 0.5rem;
+            opacity: 0.5;
+        }
+        
+        .total {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f0f9ff;
+            border-radius: 8px;
+            text-align: right;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #0c4a6e;
+        }
+        
+        /* Responsive */
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .item-row {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 0.5rem;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Auth area -->
+    <div id="auth-screen" class="auth-screen">
+      <div class="auth-form" id="login-form">
+        <h2>🛒 Smart Shopping List</h2>
+        <p style="opacity:.85">Sign in with email & password</p>
+        <input id="username" class="auth-input" type="email" placeholder="Email" />
+        <input id="password" class="auth-input" type="password" placeholder="Password" />
+        <button id="login-btn" class="auth-btn">Login</button>
+        <p class="toggle-auth" id="toggle-to-register">Don't have an account? Create one</p>
+      </div>
+
+      <div class="auth-form" id="register-form" style="display:none;">
+        <h2>📬 Create Account</h2>
+        <p style="opacity:.85">Register with email & password</p>
+        <input id="reg-username" class="auth-input" type="email" placeholder="Email" />
+        <input id="reg-password" class="auth-input" type="password" placeholder="Password (min 6 chars)" />
+        <button id="register-btn" class="auth-btn">Create Account</button>
+        <p class="toggle-auth" id="toggle-to-login">Already have an account? Login</p>
+      </div>
+    </div>
+
+    <!-- Main app -->
+    <div id="main-app" class="main-app">
+<!-- Header -->
+	 <header class="app-header">
+		<div class="header-left">
+			<img src="https://cdn-icons-png.flaticon.com/512/2838/2838895.png" alt="Logo" class="logo" />
+			<div class="site-title">
+				<div> Shopping List</div>
+			    <div id="welcome-msg">Welcome</div>
+			</div>		
+		 <nav class="nav-links">
+            <a href="#"><i class="fas fa-home"></i>  Home</a>
+            <a href="#"><i class="fas fa-info-circle"></i> About</a>
+            <a href="#"><i class="fas fa-question-circle"></i> Help</a>
+            <a href="#"><i class="fas fa-envelope"></i> Contact</a>
+        </nav>
+		</div>
+		<div class="header-right">
+			<button id="logout-btn" class="btn btn-light">Logout</button>
+			<button id="exit-btn" class="btn btn-danger">Exit</button>
+		</div>
+	 </header>
+
+      <nav class="nav-tabs">
+        <button class="nav-tab active" data-tab="active">Active List</button>
+        <button class="nav-tab" data-tab="archive">Archive</button>
+      </nav>
+
+      <section class="add-section">
+        <div class="form-grid">
+          <input id="item-name" class="form-input" placeholder="Item name" />
+          <input id="item-quantity" class="form-input" type="number" placeholder="Qty" min="1" />
+          <input id="item-price" class="form-input" type="number" placeholder="Price ($)" step="0.01" />
+          <input id="item-link" class="form-input" type="url" placeholder="Link (optional)" />
+          <button id="add-submit-btn" class="add-submit-btn">Add Item</button>
+        </div>
+      </section>
+
+      <section id="active-tab" class="list-section tab-content active">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h3 style="margin:0">Your Shopping List</h3>
+          <div style="color:#6b7280"><span id="total-items">0</span> items | Total: $<span id="total-price">0.00</span></div>
+        </div>
+        <div id="shopping-list">
+          <div class="empty-state">
+            <p>Your list is empty. Add some items to get started!</p>
+          </div>
+        </div>
+        <div id="total-display" class="total" style="display:none">Estimated Total: $<span id="grand-total">0.00</span></div>
+      </section>
+
+      <section id="archive-tab" class="list-section tab-content" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h3 style="margin:0">Archive (Completed)</h3>
+          <div style="color:#6b7280"><span id="archive-count">0</span> items</div>
+        </div>
+        <div id="archive-list">
+          <div class="empty-state"><p>No completed items yet.</p></div>
+        </div>
+      </section>
+    </div>
+	<!-- ✨ Footer -->
+	<footer class="footer">
+		<div class="footer-content">
+			<div class="footer-summary">
+			<p><strong>Active:</strong> <span id="footer-active-count">0</span></p>
+			<p><strong>Total:</strong> $<span id="footer-active-total">0.00</span></p>
+			<p><strong>Archived:</strong> <span id="footer-archived-count">0</span></p>
+			</div>
+			<div class="footer-brand">
+			<p>Made with ❤️ by Ahmed | Firebase + JS</p>
+			</div>
+		</div>
+		</footer>
+  </div>
+
+  <!-- Firebase (modular) + App logic -->
+  <script type="module">
+    // --- Firebase imports (modular) ---
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      doc,
+      addDoc,
+      setDoc,
+      getDoc,
+      getDocs,
+      updateDoc,
+      deleteDoc,
+      onSnapshot,
+      query,
+      orderBy,
+      where
+    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    // ----- YOUR FIREBASE CONFIG (you gave this) -----
+    const firebaseConfig = {
+      apiKey: "AIzaSyAzEgiMWNFe-K_1TcwqHVqFMQZS90KnVPI",
+      authDomain: "shoppinglist-a3cdc.firebaseapp.com",
+      projectId: "shoppinglist-a3cdc",
+      storageBucket: "shoppinglist-a3cdc.firebasestorage.app",
+      messagingSenderId: "477108128063",
+      appId: "1:477108128063:web:d8ad981fb5376d00cb2b8a",
+      measurementId: "G-X5JDB46CX0"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    try { getAnalytics(app); } catch (e) { /* analytics may fail on file:// */ }
+
+    const auth = getAuth();
+    const db = getFirestore();
+
+    // --- UI elements ---
+    const authScreen = document.getElementById('auth-screen');
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const regUsernameInput = document.getElementById('reg-username');
+    const regPasswordInput = document.getElementById('reg-password');
+    const loginBtn = document.getElementById('login-btn');
+    const registerBtn = document.getElementById('register-btn');
+    const toggleToRegister = document.getElementById('toggle-to-register');
+    const toggleToLogin = document.getElementById('toggle-to-login');
+
+    const mainApp = document.getElementById('main-app');
+    const welcomeMsg = document.getElementById('welcome-msg');
+    const logoutBtn = document.getElementById('logout-btn');
+    const exitBtn = document.getElementById('exit-btn');
+    const addSubmitBtn = document.getElementById('add-submit-btn');
+    const itemName = document.getElementById('item-name');
+    const itemQuantity = document.getElementById('item-quantity');
+    const itemPrice = document.getElementById('item-price');
+    const itemLink = document.getElementById('item-link');
+    const shoppingListEl = document.getElementById('shopping-list');
+    const archiveListEl = document.getElementById('archive-list');
+    const totalItemsEl = document.getElementById('total-items');
+    const totalPriceEl = document.getElementById('total-price');
+    const grandTotalEl = document.getElementById('grand-total');
+    const totalDisplayEl = document.getElementById('total-display');
+    const archiveCountEl = document.getElementById('archive-count');
+    const navTabs = document.querySelectorAll('.nav-tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    // State
+    let editingDocId = null;        // Firestore doc ID being edited
+    let currentTab = 'active';
+    let currentUser = null;
+    let unsubscribeItems = null;    // Firestore listener unsubscribe
+
+    // Auth toggle handlers
+    toggleToRegister.addEventListener('click', () => {
+      loginForm.style.display = 'none';
+      registerForm.style.display = 'block';
+    });
+    toggleToLogin.addEventListener('click', () => {
+      registerForm.style.display = 'none';
+      loginForm.style.display = 'block';
+    });
+
+    // Register
+    registerBtn.addEventListener('click', async () => {
+      const email = regUsernameInput.value.trim();
+      const pass = regPasswordInput.value.trim();
+      if (!email || !pass) return alert('Email and password required.');
+      try {
+        const userCred = await createUserWithEmailAndPassword(auth, email, pass);
+        // Optionally create user doc
+        await setDoc(doc(db, 'users', userCred.user.uid), { email });
+        regUsernameInput.value = '';
+        regPasswordInput.value = '';
+        alert('Account created — logged in.');
+      } catch (err) {
+        alert(err.message || 'Registration failed');
+        console.error(err);
+      }
+    });
+
+    // Login
+    loginBtn.addEventListener('click', async () => {
+      const email = usernameInput.value.trim();
+      const pass = passwordInput.value.trim();
+      if (!email || !pass) return alert('Email and password required.');
+      try {
+        await signInWithEmailAndPassword(auth, email, pass);
+        usernameInput.value = '';
+        passwordInput.value = '';
+      } catch (err) {
+        alert(err.message || 'Login failed');
+        console.error(err);
+      }
+    });
+
+    // Logout and exit
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+      } catch (err) {
+        console.error(err);
+      }
+    });
+    exitBtn.addEventListener('click', () => {
+      if (confirm('Exit app?')) location.reload();
+    });
+
+    // Tabs
+    navTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        navTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const name = tab.dataset.tab;
+        currentTab = name;
+        tabContents.forEach(tc => tc.style.display = (tc.id === name + '-tab') ? 'block' : 'none');
+        renderFromCache(); // re-render (we keep local cache from Firestore listener)
+      });
+    });
+
+    // Add / Update item
+    addSubmitBtn.addEventListener('click', async () => {
+      const name = itemName.value.trim();
+      const qty = parseInt(itemQuantity.value) || 1;
+      const price = parseFloat(itemPrice.value) || 0;
+      const link = itemLink.value.trim() || '';
+      if (!name) return alert('Item name required');
+
+      try {
+        if (!currentUser) throw new Error('Not authenticated');
+        const itemsRef = collection(db, 'users', currentUser.uid, 'items');
+
+        if (editingDocId) {
+          const itemDocRef = doc(db, 'users', currentUser.uid, 'items', editingDocId);
+          await updateDoc(itemDocRef, { name, quantity: qty, price, link, updatedAt: new Date() });
+          editingDocId = null;
+          addSubmitBtn.textContent = 'Add Item';
+        } else {
+          await addDoc(itemsRef, {
+            name,
+            quantity: qty,
+            price,
+            link,
+            completed: false,
+            createdAt: new Date()
+          });
+        }
+
+        clearForm();
+      } catch (err) {
+        alert(err.message || 'Failed to save item');
+        console.error(err);
+      }
+    });
+
+    function clearForm() {
+      itemName.value = '';
+      itemQuantity.value = '';
+      itemPrice.value = '';
+      itemLink.value = '';
+      editingDocId = null;
+      addSubmitBtn.textContent = 'Add Item';
+    }
+
+    // --- Firestore real-time listener & UI rendering ---
+    // We'll keep a local cache of items to compute totals etc.
+    let itemsCache = []; // { id, data }
+
+	function startItemsListener(uid) {
+		if (unsubscribeItems) unsubscribeItems();
+
+		const itemsCol = collection(db, 'users', uid, 'items');
+		const q = query(itemsCol, orderBy('createdAt', 'desc'));
+
+		unsubscribeItems = onSnapshot(q, snapshot => {
+			itemsCache = [];
+			snapshot.forEach(docSnap => {
+			itemsCache.push({ id: docSnap.id, ...docSnap.data() });
+			});
+
+			// Render UI
+			renderFromCache();
+
+			// 💥 Update footer summary live
+			updateFooterSummary(itemsCache);
+		}, err => {
+			console.error('Items listener error', err);
+		});
+	}
+
+		// 🔥 Live footer updater
+	function updateFooterSummary(items) {
+		const active = items.filter(i => !i.completed);
+		const archived = items.filter(i => i.completed);
+
+		const totalActive = active.length;
+		const totalPrice = active.reduce((sum, i) => sum + ((i.price || 0) * (i.quantity || 1)), 0);
+		const totalArchived = archived.length;
+
+		document.getElementById('footer-active-count').textContent = totalActive;
+		document.getElementById('footer-active-total').textContent = totalPrice.toFixed(2);
+		document.getElementById('footer-archived-count').textContent = totalArchived;
+	}
+
+
+    function renderFromCache() {
+      // split into active / archived
+      const active = itemsCache.filter(i => !i.completed);
+      const archived = itemsCache.filter(i => i.completed);
+
+      if (currentTab === 'active') renderActive(active); else renderArchive(archived);
+      updateStats(active, archived);
+    }
+
+    function renderActive(activeItems) {
+      if (!activeItems.length) {
+        shoppingListEl.innerHTML = `<div class="empty-state"><p>Your list is empty. Add some items to get started!</p></div>`;
+        totalDisplayEl.style.display = 'none';
+        return;
+      }
+
+      shoppingListEl.innerHTML = activeItems.map(item => `
+        <div class="item-row" data-id="${item.id}">
+          <input type="checkbox" class="item-checkbox" ${item.completed ? 'checked' : ''}/>
+          <div class="item-col">
+            <div class="item-name">${escapeHtml(item.name)}</div>
+            <div class="item-meta">Qty: ${item.quantity || 1} • ${item.link ? `<a href="${escapeAttr(item.link)}" target="_blank">Link</a>` : ''}</div>
+          </div>
+          <div style="min-width:120px;text-align:right" class="item-col">
+            <div class="item-price">$${((item.price||0) * (item.quantity||1)).toFixed(2)}</div>
+          </div>
+          <div class="item-actions">
+            <button class="btn btn-edit" title="Edit">✏️</button>
+            <button class="btn btn-success" title="Complete">✓</button>
+            <button class="btn btn-danger" title="Delete">×</button>
+          </div>
+        </div>
+      `).join('');
+
+      // attach handlers
+      shoppingListEl.querySelectorAll('.item-row').forEach(row => {
+        const id = row.dataset.id;
+        const checkbox = row.querySelector('.item-checkbox');
+        const editBtn = row.querySelector('.btn-edit');
+        const successBtn = row.querySelector('.btn-success');
+        const deleteBtn = row.querySelector('.btn-danger');
+
+        checkbox.addEventListener('change', () => toggleComplete(id, checkbox.checked));
+        editBtn.addEventListener('click', () => startEdit(id));
+        successBtn.addEventListener('click', () => toggleComplete(id, true));
+        deleteBtn.addEventListener('click', () => deleteItem(id));
+      });
+    }
+
+    function renderArchive(archivedItems) {
+      if (!archivedItems.length) {
+        archiveListEl.innerHTML = `<div class="empty-state"><p>No completed items yet.</p></div>`;
+        return;
+      }
+
+      archiveListEl.innerHTML = archivedItems.map(item => `
+        <div class="item-row completed" data-id="${item.id}">
+          <div class="item-col">
+            <div class="item-name">${escapeHtml(item.name)}</div>
+            <div class="item-meta">Qty: ${item.quantity || 1} • ${item.link ? `<a href="${escapeAttr(item.link)}" target="_blank">Link</a>` : ''}</div>
+          </div>
+          <div style="min-width:120px;text-align:right" class="item-col">
+            <div class="item-price">$${((item.price||0) * (item.quantity||1)).toFixed(2)}</div>
+          </div>
+          <div class="item-actions">
+            <button class="btn btn-edit" title="Reopen">✏️</button>
+            <button class="btn btn-danger" title="Delete">×</button>
+          </div>
+        </div>
+      `).join('');
+
+      archiveListEl.querySelectorAll('.item-row').forEach(row => {
+        const id = row.dataset.id;
+        const editBtn = row.querySelector('.btn-edit');
+        const deleteBtn = row.querySelector('.btn-danger');
+        editBtn.addEventListener('click', () => reopenAndEdit(id));
+        deleteBtn.addEventListener('click', () => deleteItem(id));
+      });
+    }
+
+    async function toggleComplete(id, completed) {
+      try {
+        const ref = doc(db, 'users', currentUser.uid, 'items', id);
+        await updateDoc(ref, { completed, updatedAt: new Date() });
+      } catch (err) {
+        console.error(err);
+        alert('Failed to update item');
+      }
+    }
+
+    async function startEdit(id) {
+      const target = itemsCache.find(i => i.id === id);
+      if (!target) return;
+      itemName.value = target.name || '';
+      itemQuantity.value = target.quantity || 1;
+      itemPrice.value = target.price || 0;
+      itemLink.value = target.link || '';
+      editingDocId = id;
+      addSubmitBtn.textContent = 'Update Item';
+      // ensure active tab selected
+      if (currentTab !== 'active') document.querySelector('[data-tab="active"]').click();
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    async function reopenAndEdit(id) {
+      try {
+        const ref = doc(db, 'users', currentUser.uid, 'items', id);
+        await updateDoc(ref, { completed: false, updatedAt: new Date() });
+        startEdit(id);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function deleteItem(id) {
+      if (!confirm('Are you sure you want to delete this item?')) return;
+      try {
+        const ref = doc(db, 'users', currentUser.uid, 'items', id);
+        await deleteDoc(ref);
+      } catch (err) {
+        console.error(err);
+        alert('Failed to delete item');
+      }
+    }
+	
+    function updateStats(activeItems, archivedItems) {
+      const totalItems = activeItems.length;
+      const totalPrice = activeItems.reduce((s, it) => s + ((it.price||0) * (it.quantity||1)), 0);
+      totalItemsEl.textContent = totalItems;
+      totalPriceEl.textContent = totalPrice.toFixed(2);
+      grandTotalEl.textContent = totalPrice.toFixed(2);
+      totalDisplayEl.style.display = totalItems > 0 ? 'block' : 'none';
+      archiveCountEl.textContent = archivedItems.length;
+    }
+
+    // Escaping helpers
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]));
+    }
+    function escapeAttr(s){ return s ? s.replace(/"/g,'&quot;') : ''; }
+
+    // --- Auth state listener ---
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        currentUser = user;
+        authScreen.style.display = 'none';
+        mainApp.style.display = 'flex';
+        welcomeMsg.textContent = `Welcome, ${user.email}`;
+        startItemsListener(user.uid);
+      } else {
+        currentUser = null;
+        mainApp.style.display = 'none';
+        authScreen.style.display = 'flex';
+        // stop listening
+        if (unsubscribeItems) { unsubscribeItems(); unsubscribeItems = null; itemsCache = []; }
+      }
+    });
+
+    // keyboard Enter handling (nice UX)
+    document.addEventListener('keydown', (e) => {
+      if ((e.key === 'Enter' || e.keyCode === 13) && authScreen.style.display !== 'none') {
+        if (registerForm.style.display !== 'none') registerBtn.click(); else loginBtn.click();
+      }
+      if ((e.key === 'Enter' || e.keyCode === 13) && mainApp.style.display !== 'none') {
+        // prevent accidental submit while typing URL etc.
+        if (document.activeElement && (document.activeElement.id === 'item-name' || document.activeElement.id === 'item-quantity' || document.activeElement.id === 'item-price' || document.activeElement.id === 'item-link')) {
+          e.preventDefault();
+          addSubmitBtn.click();
+        }
+      }
+    });
+
+    // Helper: initial UI state
+    // ensure proper tab content visibility on load
+    tabContents.forEach(tc => tc.style.display = (tc.id === 'active-tab') ? 'block' : 'none');
+
+  </script>
+</body>
+</html>
